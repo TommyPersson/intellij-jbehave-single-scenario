@@ -10,6 +10,8 @@
 				language="Story"
 				implementationClass="se.fortnox.intellij.jbehave.SingleScenarioRunLineMarkerProvider"
 		/>
+		<toolWindow id="JBehave" secondary="false" icon="AllIcons.Modules.TestResourcesRoot" anchor="bottom"
+					factoryClass="se.fortnox.intellij.jbehave.ui.storyexplorer.StoryExplorerToolWindowFactory"/>
 	</extensions>
 
 	<actions>
