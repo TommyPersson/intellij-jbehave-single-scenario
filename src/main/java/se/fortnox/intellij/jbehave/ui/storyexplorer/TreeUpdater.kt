@@ -3,12 +3,11 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer
 import javax.swing.tree.DefaultMutableTreeNode
 import java.util.concurrent.atomic.AtomicInteger
 import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiElementVisitor
-import com.intellij.psi.PsiFile
 import com.github.kumaraman21.intellijbehave.parser.StoryFile
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.psi.*
 import com.intellij.ui.treeStructure.Tree
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
@@ -17,8 +16,21 @@ import javax.swing.tree.TreeNode
 
 class TreeUpdater(
     private val storyTree: Tree,
-    private val project: Project
+    private val project: Project,
+    toolWindow: ToolWindow
 ) {
+    init {
+        PsiManager.getInstance(project).addPsiTreeChangeListener(
+            object : PsiTreeChangeAdapter() {
+                override fun childrenChanged(event: PsiTreeChangeEvent) {
+                    performUpdate()
+                    super.childrenChanged(event)
+                }
+            },
+            toolWindow.disposable
+        )
+    }
+
     fun performUpdate() {
         val storyIndex = AtomicInteger(0)
 
@@ -39,7 +51,7 @@ class TreeUpdater(
                     val needAdditionalStoryNode = storyIndex.get() >= root.childCount
 
                     val storyTreeNode = if (needAdditionalStoryNode) {
-                        StoryNodeData.from(file).wrapInTreeNode().also {
+                        StoryNodeUserData.from(file).wrapInTreeNode().also {
                             root.add(it)
                             model.nodesWereInserted(root, intArrayOf(storyIndex.get()))
                         }
@@ -47,7 +59,7 @@ class TreeUpdater(
                         root.getChildAtAs(storyIndex.get())
                     }
 
-                    val storyData = storyTreeNode.getUserObjectAs<StoryNodeData>()
+                    val storyData = storyTreeNode.getUserObjectAs<StoryNodeUserData>()
                     if (storyData.update(file)) {
                         model.nodeChanged(storyTreeNode)
                     }
@@ -57,7 +69,7 @@ class TreeUpdater(
                         val needAdditionalScenarioNode = scenarioIndex >= storyTreeNode.childCount
 
                         val scenarioTreeNode = if (needAdditionalScenarioNode) {
-                            ScenarioNodeData.from(scenario).wrapInTreeNode().also {
+                            ScenarioNodeUserData.from(scenario, storyTree).wrapInTreeNode().also {
                                 storyTreeNode.add(it)
                                 model.nodesWereInserted(storyTreeNode, intArrayOf(scenarioIndex))
                             }
@@ -65,7 +77,7 @@ class TreeUpdater(
                             storyTreeNode.getChildAtAs(scenarioIndex)
                         }
 
-                        val scenarioData = scenarioTreeNode.getUserObjectAs<ScenarioNodeData>()
+                        val scenarioData = scenarioTreeNode.getUserObjectAs<ScenarioNodeUserData>()
                         if (scenarioData.update(scenario)) {
                             model.nodeChanged(scenarioTreeNode)
                         }

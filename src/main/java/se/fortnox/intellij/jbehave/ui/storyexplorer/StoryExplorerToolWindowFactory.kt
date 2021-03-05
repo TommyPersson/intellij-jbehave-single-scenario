@@ -8,6 +8,11 @@ import com.intellij.ui.content.ContentFactory
 class StoryExplorerToolWindowFactory : ToolWindowFactory {
     private val title = "Story Explorer"
 
+    override fun isApplicable(project: Project): Boolean {
+        // TODO check if the JBehave Support plugin is available
+        return true
+    }
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val content = with (ContentFactory.SERVICE.getInstance()) {
             val form = StoryExplorerForm(project, toolWindow)

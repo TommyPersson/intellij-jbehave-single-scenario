@@ -15,7 +15,7 @@ internal class StoryTreeCellRenderer : ColoredTreeCellRenderer() {
         row: Int,
         hasFocus: Boolean
     ) {
-        val data = value.castSafelyTo<DefaultMutableTreeNode>()?.userObject?.castSafelyTo<StoryTreeNodeData>()
+        val data = value.castSafelyTo<DefaultMutableTreeNode>()?.userObject?.castSafelyTo<StoryTreeNodeUserData>()
         if (data == null) {
             append("<<FIXME>>")
             return
