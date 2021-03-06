@@ -13,19 +13,28 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
+import com.intellij.util.castSafelyTo
 import java.awt.Component
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
+import javax.swing.event.TreeSelectionEvent
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeNode
 
 
-inline fun <reified T : TreeNode> TreeNode.getChildAtAs(index: Int): T {
-    return this.getChildAt(index) as T
+inline fun <reified T : TreeNode> TreeNode.getChildAtAsOrNull(index: Int): T? {
+    return this.getChildAt(index) as? T
 }
 
-inline fun <reified T> DefaultMutableTreeNode.getUserObjectAs(): T {
-    return this.userObject as T
+inline fun <reified T> DefaultMutableTreeNode.getUserObjectAsOrNull(): T? {
+    return this.userObject as? T
+}
+
+inline fun <reified T> TreeSelectionEvent.getNewSelectionUserDataAsOrNull(): T? {
+    return newLeadSelectionPath
+        ?.lastPathComponent
+        ?.castSafelyTo<DefaultMutableTreeNode>()
+        ?.getUserObjectAsOrNull<T>()
 }
 
 fun Project.findPsiFile(virtualFile: VirtualFile): PsiFile? {

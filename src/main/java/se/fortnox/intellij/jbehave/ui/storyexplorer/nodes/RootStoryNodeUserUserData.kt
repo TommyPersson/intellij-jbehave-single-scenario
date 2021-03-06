@@ -7,7 +7,7 @@ class RootStoryNodeUserUserData(
     private val text: String
 ) : StoryTreeNodeUserData {
 
-    override fun render(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
+    override fun renderTreeCell(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
         icon = AllIcons.Actions.GroupByTestProduction
         append(text)
     }

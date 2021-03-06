@@ -71,6 +71,13 @@
 					icon="AllIcons.Actions.Collapseall"
 					use-shortcut-of="CollapseAll"
 			/>
+			<separator />
+			<action
+					id="PreviewScenarioDetailsAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.PreviewScenarioDetailsAction"
+					text="Preview Scenario"
+					icon="AllIcons.Actions.PreviewDetails"
+			/>
 		</group>
 	</actions>
 

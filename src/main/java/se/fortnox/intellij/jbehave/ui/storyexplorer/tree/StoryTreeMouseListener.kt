@@ -2,6 +2,7 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.tree
 
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
+import se.fortnox.intellij.jbehave.ui.storyexplorer.getUserObjectAsOrNull
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ScenarioNodeUserData
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -17,8 +18,7 @@ class StoryTreeMouseListener(
             tree.getClosestPathForLocation(e.x,e.y)
                 ?.lastPathComponent
                 ?.castSafelyTo<DefaultMutableTreeNode>()
-                ?.userObject
-                ?.castSafelyTo<ScenarioNodeUserData>()
+                ?.getUserObjectAsOrNull<ScenarioNodeUserData>()
                 ?.jumpToSource()
         }
     }

@@ -2,6 +2,7 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.nodes
 
 import com.github.kumaraman21.intellijbehave.language.JBehaveIcons
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.psi.PsiFile
@@ -19,7 +20,11 @@ class StoryNodeUserData private constructor(
 
     private val _popupMenu by lazy { createPopupMenu() }
 
-    val popupMenu: JBPopupMenu get() = _popupMenu
+    override val popupMenu: JBPopupMenu get() = _popupMenu
+
+    override val previewDocument get(): Document? {
+        return _file.viewProvider.document
+    }
 
     fun update(file: PsiFile): Boolean {
         if (_file == file) {
@@ -36,7 +41,7 @@ class StoryNodeUserData private constructor(
         _file.navigate(true)
     }
 
-    override fun render(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
+    override fun renderTreeCell(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
         icon = JBehaveIcons.JB
 
         val pkg = pathAsPackage(_file.directoryPathRelativeToSourceRoot ?: "")

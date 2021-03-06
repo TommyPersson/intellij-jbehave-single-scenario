@@ -9,8 +9,8 @@ import com.intellij.psi.*
 import com.intellij.ui.treeStructure.Tree
 import se.fortnox.intellij.jbehave.ui.storyexplorer.findPsiFile
 import se.fortnox.intellij.jbehave.ui.storyexplorer.getAllFilesByExtension
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getChildAtAs
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getUserObjectAs
+import se.fortnox.intellij.jbehave.ui.storyexplorer.getChildAtAsOrNull
+import se.fortnox.intellij.jbehave.ui.storyexplorer.getUserObjectAsOrNull
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ScenarioNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryNodeUserData
 import javax.swing.tree.DefaultTreeModel
@@ -60,10 +60,10 @@ class StoryTreeUpdater(
                             model.nodesWereInserted(root, intArrayOf(storyIndex.get()))
                         }
                     } else {
-                        root.getChildAtAs(storyIndex.get())
+                        root.getChildAtAsOrNull(storyIndex.get())!!
                     }
 
-                    val storyData = storyTreeNode.getUserObjectAs<StoryNodeUserData>()
+                    val storyData = storyTreeNode.getUserObjectAsOrNull<StoryNodeUserData>()!!
                     if (storyData.update(file)) {
                         model.nodeChanged(storyTreeNode)
                     }
@@ -78,10 +78,10 @@ class StoryTreeUpdater(
                                 model.nodesWereInserted(storyTreeNode, intArrayOf(scenarioIndex))
                             }
                         } else {
-                            storyTreeNode.getChildAtAs(scenarioIndex)
+                            storyTreeNode.getChildAtAsOrNull(scenarioIndex)!!
                         }
 
-                        val scenarioData = scenarioTreeNode.getUserObjectAs<ScenarioNodeUserData>()
+                        val scenarioData = scenarioTreeNode.getUserObjectAsOrNull<ScenarioNodeUserData>()!!
                         if (scenarioData.update(scenario)) {
                             model.nodeChanged(scenarioTreeNode)
                         }
@@ -92,7 +92,7 @@ class StoryTreeUpdater(
 
                     if (numScenarioNodes > numScenarios) {
                         for (i in numScenarios until numScenarioNodes) {
-                            val scenarioNodeToRemove = storyTreeNode.getChildAtAs<MutableTreeNode>(numScenarios)
+                            val scenarioNodeToRemove = storyTreeNode.getChildAtAsOrNull<MutableTreeNode>(numScenarios)
                             storyTreeNode.remove(scenarioNodeToRemove)
                             model.nodesWereRemoved(
                                 storyTreeNode,

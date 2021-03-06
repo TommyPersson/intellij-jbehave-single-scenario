@@ -2,6 +2,8 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.nodes
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.psi.PsiElement
@@ -26,7 +28,8 @@ class ScenarioNodeUserData private constructor(
 
     private val _popupMenu by lazy { createPopupMenu() }
 
-    val popupMenu: JBPopupMenu get() = _popupMenu
+    override val popupMenu: JBPopupMenu get() = _popupMenu
+
 
     // TODO memoize on _element
     val runAction by lazy { RunSingleScenarioAction(_text, _element.containingFile.virtualFile) }
@@ -52,7 +55,11 @@ class ScenarioNodeUserData private constructor(
         _element.castSafelyTo<ASTWrapperPsiElement>()?.navigate(true)
     }
 
-    override fun render(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
+    override val previewDocument get(): Document {
+        return EditorFactory.getInstance().createDocument(_element.text)
+    }
+
+    override fun renderTreeCell(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
         icon = AllIcons.RunConfigurations.Junit
         append(_text)
     }
