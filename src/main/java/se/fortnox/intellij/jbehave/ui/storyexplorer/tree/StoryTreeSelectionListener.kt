@@ -12,7 +12,7 @@ class StoryTreeSelectionListener(
     private val storyTree: Tree
 ) : TreeSelectionListener {
     override fun valueChanged(e: TreeSelectionEvent) {
-        val selectedUserData = e.newLeadSelectionPath.lastPathComponent.castSafelyTo<DefaultMutableTreeNode>()
+        val selectedUserData = e.newLeadSelectionPath?.lastPathComponent?.castSafelyTo<DefaultMutableTreeNode>()
             ?.userObject
 
         storyTree.componentPopupMenu = when (selectedUserData) {

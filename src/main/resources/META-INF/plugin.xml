@@ -56,6 +56,21 @@
 					icon="AllIcons.Actions.StartDebugger"
 					description="Debug the selected item"
 			/>
+			<separator />
+			<action
+					id="ExpandAllNodesAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.ExpandAllNodesAction"
+					text="Expand All"
+					icon="AllIcons.Actions.Expandall"
+					use-shortcut-of="ExpandAll"
+			/>
+			<action
+					id="CollapseAllNodesAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.CollapseAllNodesAction"
+					text="Collapse All"
+					icon="AllIcons.Actions.Collapseall"
+					use-shortcut-of="CollapseAll"
+			/>
 		</group>
 	</actions>
 
