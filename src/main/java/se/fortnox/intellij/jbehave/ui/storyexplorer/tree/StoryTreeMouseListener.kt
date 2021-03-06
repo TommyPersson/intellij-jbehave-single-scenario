@@ -1,7 +1,8 @@
-package se.fortnox.intellij.jbehave.ui.storyexplorer
+package se.fortnox.intellij.jbehave.ui.storyexplorer.tree
 
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
+import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ScenarioNodeUserData
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.tree.DefaultMutableTreeNode
@@ -13,7 +14,7 @@ class StoryTreeMouseListener(
         super.mouseClicked(e)
 
         if (e.clickCount == 2) {
-            tree.getPathForLocation(e.x,e.y)
+            tree.getClosestPathForLocation(e.x,e.y)
                 ?.lastPathComponent
                 ?.castSafelyTo<DefaultMutableTreeNode>()
                 ?.userObject

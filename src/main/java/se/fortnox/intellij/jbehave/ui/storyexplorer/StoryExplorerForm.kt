@@ -1,25 +1,20 @@
 package se.fortnox.intellij.jbehave.ui.storyexplorer
 
-import com.intellij.lang.jvm.actions.stringAttribute
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.roots.ToolbarPanel
-import com.intellij.ui.tabs.impl.JBTabsImpl
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
-import se.fortnox.intellij.jbehave.RunSingleScenarioAction
-import java.awt.Color
+import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.RootStoryNodeUserUserData
+import se.fortnox.intellij.jbehave.ui.storyexplorer.tree.StoryTreeCellRenderer
+import se.fortnox.intellij.jbehave.ui.storyexplorer.tree.StoryTreeMouseListener
+import se.fortnox.intellij.jbehave.ui.storyexplorer.tree.StoryTreeSelectionListener
+import se.fortnox.intellij.jbehave.ui.storyexplorer.tree.StoryTreeUpdater
 import java.awt.GridBagConstraints
 import java.awt.Insets
 import javax.swing.BorderFactory
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.JScrollPane
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeSelectionModel
 
@@ -30,7 +25,7 @@ class StoryExplorerForm(
 
     private lateinit var rootPanel: JPanel
 
-    private val treeUpdater: TreeUpdater
+    private val storyTreeUpdater: StoryTreeUpdater
 
     val content: JComponent get() = rootPanel
 
@@ -47,7 +42,7 @@ class StoryExplorerForm(
             it.border = BorderFactory.createEmptyBorder()
         }
 
-        treeUpdater = TreeUpdater(storyTree, project, toolWindow)
+        storyTreeUpdater = StoryTreeUpdater(storyTree, project, toolWindow)
 
         rootPanel.add(scrollPanel, fillingGridBagConstraints)
     }

@@ -1,73 +1,21 @@
-package se.fortnox.intellij.jbehave.ui.storyexplorer
+package se.fortnox.intellij.jbehave.ui.storyexplorer.nodes
 
-import com.github.kumaraman21.intellijbehave.language.JBehaveIcons
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.icons.AllIcons
-import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
 import se.fortnox.intellij.jbehave.DebugSingleScenarioAction
 import se.fortnox.intellij.jbehave.JbehaveSingleScenarioAction
 import se.fortnox.intellij.jbehave.RunSingleScenarioAction
-import java.awt.Component
+import se.fortnox.intellij.jbehave.ui.storyexplorer.asMenuItem
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.JPopupMenu
 import javax.swing.tree.DefaultMutableTreeNode
-
-
-interface StoryTreeNodeUserData {
-    fun render(renderer: ColoredTreeCellRenderer)
-}
-
-class RootStoryNodeUserUserData(
-    private val text: String
-) : StoryTreeNodeUserData {
-
-    override fun render(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
-        icon = AllIcons.Actions.GroupByTestProduction
-        append(text)
-    }
-}
-
-class StoryNodeUserData private constructor(
-    private var _file: PsiFile
-) : StoryTreeNodeUserData {
-
-    private var _text: String = _file.name
-
-    fun update(file: PsiFile): Boolean {
-        if (_file == file) {
-            val newText = file.name
-            if (newText == _text) {
-                return false
-            }
-
-            _text = newText
-        }
-
-        _file = file
-        return true
-    }
-
-    fun wrapInTreeNode() = DefaultMutableTreeNode(this)
-
-    override fun render(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
-        icon = JBehaveIcons.JB
-        append(_text)
-    }
-
-    companion object {
-        fun from(file: PsiFile) = StoryNodeUserData(file)
-    }
-}
 
 class ScenarioNodeUserData private constructor(
     private var _element: PsiElement,
@@ -130,18 +78,5 @@ class ScenarioNodeUserData private constructor(
 
     companion object {
         fun from(element: PsiElement, tree: Tree) = ScenarioNodeUserData(element, tree)
-    }
-}
-
-fun AnAction.asMenuItem(parent: Component): JBMenuItem {
-    return JBMenuItem(object : AbstractAction() {
-        override fun actionPerformed(e: ActionEvent?) {
-            val dataContext = DataManager.getInstance().getDataContext(parent)
-            val anActionEvent = AnActionEvent.createFromAnAction(this@asMenuItem, null, "place?", dataContext)
-            actionPerformed(anActionEvent)
-        }
-    }).also {
-        it.text = templatePresentation.text
-        it.icon = templatePresentation.icon
     }
 }

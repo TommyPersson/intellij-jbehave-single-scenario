@@ -1,7 +1,8 @@
-package se.fortnox.intellij.jbehave.ui.storyexplorer
+package se.fortnox.intellij.jbehave.ui.storyexplorer.tree
 
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.util.castSafelyTo
+import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryTreeNodeUserData
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 
