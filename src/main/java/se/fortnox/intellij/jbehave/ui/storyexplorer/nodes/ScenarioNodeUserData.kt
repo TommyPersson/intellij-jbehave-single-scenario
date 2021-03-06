@@ -3,10 +3,13 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.nodes
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.psi.PsiElement
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
@@ -14,6 +17,7 @@ import se.fortnox.intellij.jbehave.DebugSingleScenarioAction
 import se.fortnox.intellij.jbehave.JbehaveSingleScenarioAction
 import se.fortnox.intellij.jbehave.RunSingleScenarioAction
 import se.fortnox.intellij.jbehave.ui.storyexplorer.asMenuItem
+import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.JPopupMenu
@@ -55,13 +59,43 @@ class ScenarioNodeUserData private constructor(
         _element.castSafelyTo<ASTWrapperPsiElement>()?.navigate(true)
     }
 
-    override val previewDocument get(): Document {
-        return EditorFactory.getInstance().createDocument(_element.text)
-    }
+    override val previewDocument get(): PreviewDocument? = createPreviewDocument()
+
 
     override fun renderTreeCell(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
         icon = AllIcons.RunConfigurations.Junit
         append(_text)
+    }
+
+    private fun createPreviewDocument(): PreviewDocument? {
+        val document = _element.containingFile.viewProvider.document
+            ?: return null
+
+        return object : PreviewDocument {
+            override val document: Document get() = document
+
+            override fun configureEditor(editor: EditorEx) {
+                editor.limitToRegion(_element)
+            }
+
+            private fun EditorEx.limitToRegion(region: PsiElement) {
+                with (foldingModel) {
+                    runBatchFoldingOperation {
+                        if (region.startOffset != 0) {
+                            addInvisibleFold(0, region.startOffset)
+                        }
+
+                        if (region.endOffset != region.containingFile.endOffset) {
+                            addInvisibleFold(region.endOffset, region.containingFile.endOffset)
+                        }
+                    }
+                }
+            }
+
+            private fun FoldingModelEx.addInvisibleFold(start: Int, end: Int) {
+                createFoldRegion(start, end, "", null, true)
+            }
+        }
     }
 
     private fun createPopupMenu(): JBPopupMenu {

@@ -1,9 +1,8 @@
 package se.fortnox.intellij.jbehave.ui.storyexplorer.preview
 
 import com.github.kumaraman21.intellijbehave.language.StoryFileType
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.*
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.util.castSafelyTo
 import se.fortnox.intellij.jbehave.ui.storyexplorer.getNewSelectionUserDataAsOrNull
@@ -22,7 +21,7 @@ class ScenarioPreviewPanel(
 ) {
     private val previewPanel = JPanel(BorderLayout())
 
-    private var editor: Editor? by Delegates.observable(null, ::onEditorChanged)
+    private var editor: EditorEx? by Delegates.observable(null, ::onEditorChanged)
 
     val component: JComponent = previewPanel
 
@@ -40,8 +39,8 @@ class ScenarioPreviewPanel(
 
     private fun onEditorChanged(
         @Suppress("UNUSED_PARAMETER") property: KProperty<*>,
-        old: Editor?,
-        new: Editor?
+        old: EditorEx?,
+        new: EditorEx?
     ) {
         if (old != null) {
             previewPanel.remove(old.component)
@@ -55,8 +54,17 @@ class ScenarioPreviewPanel(
         }
     }
 
-    private fun createEditor(document: Document): Editor {
-        return EditorFactory.getInstance().createEditor(document, project, StoryFileType.STORY_FILE_TYPE, true)
+    private fun createEditor(previewDocument: PreviewDocument): EditorEx {
+        val editor = EditorFactory.getInstance().createEditor(
+            previewDocument.document,
+            project,
+            StoryFileType.STORY_FILE_TYPE,
+            true
+        ) as EditorEx
+
+        previewDocument.configureEditor(editor)
+
+        return editor
     }
 
     private fun Editor.release() {
