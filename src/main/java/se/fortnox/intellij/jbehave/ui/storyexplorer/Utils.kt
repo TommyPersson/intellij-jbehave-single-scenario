@@ -84,9 +84,8 @@ fun AnAction.asMenuItem(parent: Component): JBMenuItem {
     }
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <T : Component> AnActionEvent.getContextComponent(): T? {
-    return dataContext.getData(PlatformDataKeys.CONTEXT_COMPONENT) as? T?
+inline fun <reified T : Component> AnActionEvent.getContextComponent(): T? {
+    return dataContext.getData(PlatformDataKeys.CONTEXT_COMPONENT) as? T
 }
 
 fun pathAsPackage(path: String): String {

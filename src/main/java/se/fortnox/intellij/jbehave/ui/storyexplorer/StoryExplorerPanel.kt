@@ -15,17 +15,13 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.border.Border
 
-class StoryExplorerForm(
-    private val project: Project,
-    private val toolWindow: ToolWindow
-) {
-    private lateinit var rootPanel: JPanel
+class StoryExplorerPanel(project: Project, toolWindow: ToolWindow) : JPanel(BorderLayout()) {
 
-    val content: JComponent get() = rootPanel
+    val storyTree = StoryTree(project, toolWindow)
+
+    val previewPanel = ScenarioPreviewPanel(project, storyTree)
 
     init {
-        val storyTree = StoryTree(project, toolWindow)
-
         val scrollPanel = JBScrollPane(storyTree).also {
             it.border = BorderFactory.createEmptyBorder()
         }
@@ -34,24 +30,28 @@ class StoryExplorerForm(
             val actionGroup = getAction("StoryExplorerActionGroup") as ActionGroup
 
             createActionToolbar("StoryExplorer", actionGroup, false).also {
-                it.setTargetComponent(storyTree)
+                it.setTargetComponent(this@StoryExplorerPanel)
                 it.component.border = makeRightBorder()
             }
         }
 
-        val previewPanel = ScenarioPreviewPanel(project, storyTree)
 
-        val splitPane = JBSplitter(false, "StoryExplorerSplitterKey", 0.5f).also {
+        val splitPane = JBSplitter(
+            false,
+            "StoryExplorerSplitterKey",
+            0.5f
+        ).also {
             it.firstComponent = scrollPanel
             it.secondComponent = previewPanel.component
             it.isShowDividerControls = true
             it.isShowDividerIcon = true
         }
 
-        rootPanel.add(toolbar.component, BorderLayout.WEST)
-        rootPanel.add(splitPane, BorderLayout.CENTER)
+        add(toolbar.component, BorderLayout.WEST)
+        add(splitPane, BorderLayout.CENTER)
     }
 
-    private fun makeRightBorder(): Border = BorderFactory.createMatteBorder(0, 0, 0, 1, JBColor.border())
+    private fun makeRightBorder(): Border {
+        return BorderFactory.createMatteBorder(0, 0, 0, 1, JBColor.border())
+    }
 }
-

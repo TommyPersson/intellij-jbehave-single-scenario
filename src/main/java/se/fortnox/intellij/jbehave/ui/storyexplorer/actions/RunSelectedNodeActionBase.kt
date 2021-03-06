@@ -2,8 +2,8 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import se.fortnox.intellij.jbehave.ui.storyexplorer.StoryExplorerPanel
 import se.fortnox.intellij.jbehave.ui.storyexplorer.getContextComponent
-import se.fortnox.intellij.jbehave.ui.storyexplorer.tree.StoryTree
 
 abstract class RunSelectedNodeActionBase : AnAction() {
 
@@ -14,7 +14,7 @@ abstract class RunSelectedNodeActionBase : AnAction() {
     }
 
     override fun update(e: AnActionEvent) {
-        val tree = e.getContextComponent<StoryTree>()
+        val tree = e.getContextComponent<StoryExplorerPanel>()?.storyTree
             ?: return
 
         val action = tree.getSelectionUserData()?.let {

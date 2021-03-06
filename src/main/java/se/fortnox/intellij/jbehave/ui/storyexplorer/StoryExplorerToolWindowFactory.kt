@@ -15,8 +15,8 @@ class StoryExplorerToolWindowFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val content = with (ContentFactory.SERVICE.getInstance()) {
-            val form = StoryExplorerForm(project, toolWindow)
-            createContent(form.content, title, false)
+            val storyExplorer = StoryExplorerPanel(project, toolWindow)
+            createContent(storyExplorer, title, false)
         }
 
         toolWindow.contentManager.addContent(content)

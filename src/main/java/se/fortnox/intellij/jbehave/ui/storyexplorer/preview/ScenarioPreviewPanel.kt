@@ -23,6 +23,8 @@ class ScenarioPreviewPanel(
 
     private var editor: EditorEx? by Delegates.observable(null, ::onEditorChanged)
 
+    var shouldShowPreview: Boolean by Delegates.observable(true, ::onShouldShowPreviewChanged)
+
     val component: JComponent = previewPanel
 
     init {
@@ -35,6 +37,18 @@ class ScenarioPreviewPanel(
         val document = selectionUserData?.castSafelyTo<StoryTreeNodeUserData>()?.previewDocument
 
         editor = document?.let { createEditor(it) }
+    }
+
+    private fun onShouldShowPreviewChanged(
+        @Suppress("UNUSED_PARAMETER") property: KProperty<*>,
+        old: Boolean,
+        new: Boolean
+    ) {
+        if (previewPanel.components.any()) {
+            previewPanel.isVisible = new
+        } else {
+            previewPanel.isVisible = false
+        }
     }
 
     private fun onEditorChanged(
@@ -50,7 +64,7 @@ class ScenarioPreviewPanel(
 
         if (new != null) {
             previewPanel.add(new.component, BorderLayout.CENTER)
-            previewPanel.isVisible = true
+            previewPanel.isVisible = shouldShowPreview
         }
     }
 

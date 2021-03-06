@@ -73,9 +73,9 @@
 			/>
 			<separator />
 			<action
-					id="PreviewScenarioDetailsAction"
-					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.PreviewScenarioDetailsAction"
-					text="Preview Scenario"
+					id="TogglePreviewAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.TogglePreviewAction"
+					text="Show Preview"
 					icon="AllIcons.Actions.PreviewDetails"
 			/>
 		</group>
