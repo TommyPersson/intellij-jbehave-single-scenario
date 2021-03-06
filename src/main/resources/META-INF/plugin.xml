@@ -32,6 +32,31 @@
 				description="Debug single scenario"
 			/>
 		</group>
+
+		<group id="StoryExplorerActionGroup">
+			<action
+					id="RefreshStoryTreeAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RefreshStoryTreeAction"
+					text="Refresh"
+					icon="AllIcons.Actions.Refresh"
+					description="Refresh the story explorer"
+			/>
+			<separator />
+			<action
+					id="RunSelectedNodeAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RunSelectedNodeAction"
+					text="Run Selection"
+					icon="AllIcons.Actions.Execute"
+					description="Run the selected item"
+			/>
+			<action
+					id="DebugSelectedNodeAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.DebugSelectedNodeAction"
+					text="Debug Selection"
+					icon="AllIcons.Actions.StartDebugger"
+					description="Debug the selected item"
+			/>
+		</group>
 	</actions>
 
 	<depends>JUnit</depends>

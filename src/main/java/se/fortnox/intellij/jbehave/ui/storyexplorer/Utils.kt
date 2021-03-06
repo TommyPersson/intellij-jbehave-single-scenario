@@ -3,6 +3,7 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
@@ -72,6 +73,11 @@ fun AnAction.asMenuItem(parent: Component): JBMenuItem {
         it.text = templatePresentation.text
         it.icon = templatePresentation.icon
     }
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Component> AnActionEvent.getContextComponent(): T? {
+    return dataContext.getData(PlatformDataKeys.CONTEXT_COMPONENT) as? T?
 }
 
 fun pathAsPackage(path: String): String {

@@ -28,6 +28,10 @@ class ScenarioNodeUserData private constructor(
 
     val popupMenu: JBPopupMenu get() = _popupMenu
 
+    // TODO memoize on _element
+    val runAction by lazy { RunSingleScenarioAction(_text, _element.containingFile.virtualFile) }
+    val debugAction by lazy { DebugSingleScenarioAction(_text, _element.containingFile.virtualFile) }
+
     fun update(element: PsiElement): Boolean {
         if (_element == element) {
             val newText = element.getScenarioText()
@@ -54,8 +58,9 @@ class ScenarioNodeUserData private constructor(
     }
 
     private fun createPopupMenu(): JBPopupMenu {
-        val runActionItem = RunSingleScenarioAction(_text, _element.containingFile.virtualFile).asMenuItem(tree)
-        val debugActionItem = DebugSingleScenarioAction(_text, _element.containingFile.virtualFile).asMenuItem(tree)
+
+        val runActionItem = runAction.asMenuItem(tree)
+        val debugActionItem = debugAction.asMenuItem(tree)
 
         val navigateToScenarioActionItem = JBMenuItem(object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent) = jumpToSource()

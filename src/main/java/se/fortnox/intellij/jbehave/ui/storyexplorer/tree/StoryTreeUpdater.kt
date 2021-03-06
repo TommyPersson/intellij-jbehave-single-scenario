@@ -20,9 +20,9 @@ import javax.swing.tree.MutableTreeNode
 class StoryTreeUpdater(
     private val storyTree: Tree,
     private val project: Project,
-    toolWindow: ToolWindow
+    private val toolWindow: ToolWindow
 ) {
-    init {
+    fun init() {
         PsiManager.getInstance(project).addPsiTreeChangeListener(
             object : PsiTreeChangeAdapter() {
                 override fun childrenChanged(event: PsiTreeChangeEvent) {
@@ -34,7 +34,7 @@ class StoryTreeUpdater(
         )
     }
 
-    fun performUpdate() {
+    fun performUpdate(reset: Boolean = false) {
         val storyIndex = AtomicInteger(0)
 
         for (storyVirtualFile in project.getAllFilesByExtension("story")) {
