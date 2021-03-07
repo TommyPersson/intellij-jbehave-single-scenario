@@ -10,5 +10,9 @@ class RunSelectedNodeAction : RunSelectedNodeActionBase() {
             else -> null
         }
     }
+
+    companion object {
+        val ID: String = RunSelectedNodeAction::class.java.name
+    }
 }
 

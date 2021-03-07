@@ -10,4 +10,8 @@ class DebugSelectedNodeAction : RunSelectedNodeActionBase() {
             else -> null
         }
     }
+
+    companion object {
+        val ID: String = DebugSelectedNodeAction::class.java.name
+    }
 }

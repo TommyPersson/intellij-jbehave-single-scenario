@@ -1,23 +1,22 @@
 package se.fortnox.intellij.jbehave.ui.storyexplorer.actions
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
-import se.fortnox.intellij.jbehave.ui.storyexplorer.StoryExplorerPanel
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getContextComponent
+import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.ScenarioPreviewPanel
 
-class TogglePreviewAction : ToggleAction() {
-
+class TogglePreviewAction(
+    private val previewPanel: ScenarioPreviewPanel
+) : ToggleAction(
+    "Show preview",
+    null,
+    AllIcons.Actions.PreviewDetails
+) {
     override fun setSelected(e: AnActionEvent, state: Boolean) {
-        val previewPanel = e.getContextComponent<StoryExplorerPanel>()?.previewPanel
-            ?: return
-
         previewPanel.shouldShowPreview = state
     }
 
     override fun isSelected(e: AnActionEvent): Boolean {
-        val previewPanel = e.getContextComponent<StoryExplorerPanel>()?.previewPanel
-            ?: return false
-
         return previewPanel.shouldShowPreview
     }
 }

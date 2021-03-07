@@ -1,5 +1,6 @@
 package se.fortnox.intellij.jbehave.ui.storyexplorer.tree
 
+import com.intellij.ide.DefaultTreeExpander
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.ColoredTreeCellRenderer
@@ -21,6 +22,8 @@ import javax.swing.tree.TreeSelectionModel
 class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
     private val updater = StoryTreeUpdater(this, project, toolWindow)
 
+    val treeExpander: com.intellij.ide.TreeExpander = TreeExpander(this)
+
     init {
         setCellRenderer(CellRenderer())
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
@@ -38,6 +41,14 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
 
     fun getSelectionUserData(): Any? {
         return selectionModel?.selectionPath?.lastPathComponent?.castSafelyTo<DefaultMutableTreeNode>()?.userObject
+    }
+
+    private class TreeExpander(storyTree: StoryTree) : DefaultTreeExpander(storyTree) {
+        override fun collapseAll(tree: JTree, keepSelectionLevel: Int) {
+            // Override to change collapse behavior to non-strict.
+            // That is, to keep the first level of nodes open on collapse.
+            super.collapseAll(tree, false, keepSelectionLevel)
+        }
     }
 
     private class CellRenderer : ColoredTreeCellRenderer() {
