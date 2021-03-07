@@ -95,7 +95,7 @@ class ScenarioNodeUserData private constructor(
     }
 
     private fun PsiElement.getScenarioText(): String {
-        return JbehaveSingleScenarioAction.findScenario(text, 0)
+        return JbehaveSingleScenarioAction.findScenario(text, 0) ?: "<Unknown>"
     }
 
     companion object {
