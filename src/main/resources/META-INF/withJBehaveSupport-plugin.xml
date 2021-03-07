@@ -1,27 +1,32 @@
 <idea-plugin>
-	<extensions defaultExtensionNs="com.intellij">
-		<runLineMarkerContributor
-				language="Story"
-				implementationClass="se.fortnox.intellij.jbehave.SingleScenarioRunLineMarkerProvider"
-		/>
-		<toolWindow id="JBehave" secondary="false" icon="AllIcons.Modules.TestResourcesRoot" anchor="bottom"
-					factoryClass="se.fortnox.intellij.jbehave.ui.storyexplorer.StoryExplorerToolWindowFactory"/>
-	</extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <runLineMarkerContributor
+                language="Story"
+                implementationClass="se.fortnox.intellij.jbehave.SingleScenarioRunLineMarkerProvider"
+        />
+        <toolWindow
+                id="JBehave"
+                secondary="false"
+                icon="AllIcons.Modules.TestResourcesRoot"
+                anchor="bottom"
+                factoryClass="se.fortnox.intellij.jbehave.ui.storyexplorer.StoryExplorerToolWindowFactory"
+        />
+    </extensions>
 
-	<actions>
-		<action
-				id="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RunSelectedNodeAction"
-				class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RunSelectedNodeAction"
-				text="Run Selection"
-				icon="AllIcons.Actions.Execute"
-				description="Run the selected item"
-		/>
-		<action
-				id="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.DebugSelectedNodeAction"
-				class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.DebugSelectedNodeAction"
-				text="Debug Selection"
-				icon="AllIcons.Actions.StartDebugger"
-				description="Debug the selected item"
-		/>
-	</actions>
+    <actions>
+        <action
+                id="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RunSelectedNodeAction"
+                class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RunSelectedNodeAction"
+                text="Run Selection"
+                icon="AllIcons.Actions.Execute"
+                description="Run the selected item"
+        />
+        <action
+                id="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.DebugSelectedNodeAction"
+                class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.DebugSelectedNodeAction"
+                text="Debug Selection"
+                icon="AllIcons.Actions.StartDebugger"
+                description="Debug the selected item"
+        />
+    </actions>
 </idea-plugin>
