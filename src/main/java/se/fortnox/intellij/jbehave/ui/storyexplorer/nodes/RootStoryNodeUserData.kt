@@ -3,7 +3,7 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.nodes
 import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTreeCellRenderer
 
-class RootStoryNodeUserUserData(
+class RootStoryNodeUserData(
     private val text: String
 ) : StoryTreeNodeUserData {
 

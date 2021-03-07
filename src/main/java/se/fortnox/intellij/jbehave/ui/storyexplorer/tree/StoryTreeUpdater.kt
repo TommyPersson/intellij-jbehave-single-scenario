@@ -22,6 +22,9 @@ class StoryTreeUpdater(
     private val project: Project,
     private val toolWindow: ToolWindow
 ) {
+    private val model = storyTree.model as DefaultTreeModel
+    private val root = model.root as DefaultMutableTreeNode
+
     fun init() {
         PsiManager.getInstance(project).addPsiTreeChangeListener(
             object : PsiTreeChangeAdapter() {
@@ -35,6 +38,11 @@ class StoryTreeUpdater(
     }
 
     fun performUpdate(reset: Boolean = false) {
+        if (reset) {
+            root.removeAllChildren()
+            model.reload()
+        }
+
         val storyIndex = AtomicInteger(0)
 
         for (storyVirtualFile in project.getAllFilesByExtension("story")) {
@@ -43,9 +51,6 @@ class StoryTreeUpdater(
     }
 
     private fun makeVisitor(storyIndex: AtomicInteger): PsiElementVisitor {
-        val model = storyTree.model as DefaultTreeModel
-        val root = model.root as DefaultMutableTreeNode
-
         return object : PsiElementVisitor() {
             override fun visitFile(file: PsiFile) {
                 if (file is StoryFile) {
