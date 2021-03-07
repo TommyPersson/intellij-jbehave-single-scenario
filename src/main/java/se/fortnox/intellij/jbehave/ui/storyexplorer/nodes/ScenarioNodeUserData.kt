@@ -48,8 +48,6 @@ class ScenarioNodeUserData private constructor(
         return true
     }
 
-    fun wrapInTreeNode() = DefaultMutableTreeNode(this)
-
     fun jumpToSource() {
         element.castSafelyTo<ASTWrapperPsiElement>()?.navigate(true)
     }

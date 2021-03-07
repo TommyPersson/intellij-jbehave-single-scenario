@@ -33,8 +33,6 @@ class StoryNodeUserData private constructor(
         return true
     }
 
-    fun wrapInTreeNode() = DefaultMutableTreeNode(this)
-
     fun jumpToSource() {
         file.navigate(true)
     }

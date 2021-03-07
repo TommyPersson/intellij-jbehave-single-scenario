@@ -11,12 +11,11 @@ import com.intellij.psi.util.collectDescendantsOfType
 import com.intellij.psi.util.elementType
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.Alarm
-import se.fortnox.intellij.jbehave.ui.storyexplorer.findPsiFile
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getAllFilesByExtension
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getChildAtAsOrNull
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getUserObjectAsOrNull
+import se.fortnox.intellij.jbehave.ui.storyexplorer.*
+import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ModuleNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ScenarioNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryNodeUserData
+import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.wrapInTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
 
@@ -71,7 +70,9 @@ class StoryTreeUpdater(
                     return
                 }
 
-                val storyTreeNode = getOrCreateStoryNode(file, storyIndex.getAndIncrement())
+                val moduleNode = getOrCreateModuleNode(file)
+
+                val storyTreeNode = getOrCreateStoryNode(file, storyIndex.getAndIncrement(), moduleNode)
                 updateStoryTreeNode(storyTreeNode, file)
 
                 val scenarioElements = findScenarioElements(file)
@@ -131,17 +132,18 @@ class StoryTreeUpdater(
 
     private fun getOrCreateStoryNode(
         file: PsiFile,
-        storyIndex: Int
+        storyIndex: Int,
+        moduleNode: DefaultMutableTreeNode
     ): DefaultMutableTreeNode {
-        val needAdditionalStoryNode = storyIndex >= root.childCount
+        val needAdditionalStoryNode = storyIndex >= moduleNode.childCount
 
         return if (needAdditionalStoryNode) {
             StoryNodeUserData.from(file).wrapInTreeNode().also {
-                root.add(it)
-                model.nodesWereInserted(root, intArrayOf(storyIndex))
+                moduleNode.add(it)
+                model.nodesWereInserted(moduleNode, intArrayOf(moduleNode.childCount - 1))
             }
         } else {
-            root.getChildAtAsOrNull(storyIndex)!!
+            moduleNode.getChildAtAsOrNull(storyIndex)!!
         }
     }
 
@@ -155,10 +157,30 @@ class StoryTreeUpdater(
         return if (needAdditionalScenarioNode) {
             ScenarioNodeUserData.from(scenario, storyTree).wrapInTreeNode().also {
                 storyTreeNode.add(it)
-                model.nodesWereInserted(storyTreeNode, intArrayOf(scenarioIndex))
+                model.nodesWereInserted(storyTreeNode, intArrayOf(storyTreeNode.childCount - 1))
             }
         } else {
             storyTreeNode.getChildAtAsOrNull(scenarioIndex)!!
+        }
+    }
+
+    private fun getOrCreateModuleNode(
+        file: PsiFile,
+    ): DefaultMutableTreeNode {
+        val module = file.containingModule!!
+
+        val existingTreeNode = root.children().toList()
+            .filterIsInstance<DefaultMutableTreeNode>()
+            .firstOrNull { it.getUserObjectAsOrNull<ModuleNodeUserData>()?.module == module }
+
+        return if (existingTreeNode != null) {
+            // TODO update node
+            existingTreeNode
+        } else {
+            ModuleNodeUserData.from(module).wrapInTreeNode().also {
+                root.add(it)
+                model.nodesWereInserted(root, intArrayOf(root.childCount - 1))
+            }
         }
     }
 }
