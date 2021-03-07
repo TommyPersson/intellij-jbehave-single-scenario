@@ -9,7 +9,7 @@ class StoryExplorerToolWindowFactory : ToolWindowFactory {
     private val title = "Story Explorer"
 
     override fun isApplicable(project: Project): Boolean {
-        // TODO check if the JBehave Support plugin is available
+        // TODO check if any loaded module is JVM based?
         return true
     }
 

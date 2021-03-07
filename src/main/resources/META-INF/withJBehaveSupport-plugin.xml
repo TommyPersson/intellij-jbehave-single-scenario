@@ -1,0 +1,59 @@
+<idea-plugin>
+	<extensions defaultExtensionNs="com.intellij">
+		<runLineMarkerContributor
+				language="Story"
+				implementationClass="se.fortnox.intellij.jbehave.SingleScenarioRunLineMarkerProvider"
+		/>
+		<toolWindow id="JBehave" secondary="false" icon="AllIcons.Modules.TestResourcesRoot" anchor="bottom"
+					factoryClass="se.fortnox.intellij.jbehave.ui.storyexplorer.StoryExplorerToolWindowFactory"/>
+	</extensions>
+
+	<actions>
+		<group id="StoryExplorerActionGroup">
+			<action
+					id="RefreshStoryTreeAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RefreshStoryTreeAction"
+					text="Refresh"
+					icon="AllIcons.Actions.Refresh"
+					description="Refresh the story explorer"
+			/>
+			<separator />
+			<action
+					id="RunSelectedNodeAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.RunSelectedNodeAction"
+					text="Run Selection"
+					icon="AllIcons.Actions.Execute"
+					description="Run the selected item"
+			/>
+			<action
+					id="DebugSelectedNodeAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.DebugSelectedNodeAction"
+					text="Debug Selection"
+					icon="AllIcons.Actions.StartDebugger"
+					description="Debug the selected item"
+			/>
+			<separator />
+			<action
+					id="ExpandAllNodesAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.ExpandAllNodesAction"
+					text="Expand All"
+					icon="AllIcons.Actions.Expandall"
+					use-shortcut-of="ExpandAll"
+			/>
+			<action
+					id="CollapseAllNodesAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.CollapseAllNodesAction"
+					text="Collapse All"
+					icon="AllIcons.Actions.Collapseall"
+					use-shortcut-of="CollapseAll"
+			/>
+			<separator />
+			<action
+					id="TogglePreviewAction"
+					class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.TogglePreviewAction"
+					text="Show Preview"
+					icon="AllIcons.Actions.PreviewDetails"
+			/>
+		</group>
+	</actions>
+</idea-plugin>
