@@ -2,6 +2,7 @@ package se.fortnox.intellij.jbehave.utils
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtil
+import com.intellij.openapi.roots.ModuleRootManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -12,4 +13,8 @@ fun Module.getAllFilesByExtension(extension: String): Collection<VirtualFile> {
 
 val Module.dirPath get(): String {
     return ModuleUtil.getModuleDirPath(this)
+}
+
+val Module.contentRootPath get(): String {
+    return ModuleRootManagerEx.getInstanceEx(this).contentRoots.first().path
 }

@@ -77,7 +77,7 @@ class StoryTreeUpdater(
     }
 
     private fun updateTree() {
-        val modules = project.modules.sortedBy { it.dirPath }
+        val modules = project.modules.sortedBy { it.contentRootPath }
         for (module in modules) {
             updateTreeWithModule(module)
         }
