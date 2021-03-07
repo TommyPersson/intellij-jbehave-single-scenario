@@ -20,6 +20,7 @@ import javax.swing.AbstractAction
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
 
 
 inline fun <reified T : TreeNode> TreeNode.getChildAtAsOrNull(index: Int): T? {
@@ -30,11 +31,14 @@ inline fun <reified T> DefaultMutableTreeNode.getUserObjectAsOrNull(): T? {
     return this.userObject as? T
 }
 
-inline fun <reified T> TreeSelectionEvent.getNewSelectionUserDataAsOrNull(): T? {
-    return newLeadSelectionPath
-        ?.lastPathComponent
+inline fun <reified T> TreePath.getLastUserDataAsOrNull(): T? {
+    return lastPathComponent
         ?.castSafelyTo<DefaultMutableTreeNode>()
         ?.getUserObjectAsOrNull<T>()
+}
+
+inline fun <reified T> TreeSelectionEvent.getNewSelectionUserDataAsOrNull(): T? {
+    return newLeadSelectionPath?.getLastUserDataAsOrNull<T>()
 }
 
 fun Project.findPsiFile(virtualFile: VirtualFile): PsiFile? {

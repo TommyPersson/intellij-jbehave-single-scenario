@@ -9,5 +9,6 @@ interface StoryTreeNodeUserData {
     val popupMenu: JBPopupMenu? get() = null
     val previewDocument: PreviewDocument? get() = null
     fun renderTreeCell(renderer: ColoredTreeCellRenderer)
+    fun toSearchString(): String
 }
 

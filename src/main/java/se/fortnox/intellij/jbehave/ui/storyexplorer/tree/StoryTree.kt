@@ -4,8 +4,12 @@ import com.intellij.ide.DefaultTreeExpander
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.ColoredTreeCellRenderer
+import com.intellij.ui.TreeSpeedSearch
+import com.intellij.ui.speedSearch.SpeedSearchUtil
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
+import com.intellij.util.containers.Convertor
+import se.fortnox.intellij.jbehave.ui.storyexplorer.getLastUserDataAsOrNull
 import se.fortnox.intellij.jbehave.ui.storyexplorer.getNewSelectionUserDataAsOrNull
 import se.fortnox.intellij.jbehave.ui.storyexplorer.getUserObjectAsOrNull
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.RootStoryNodeUserData
@@ -17,6 +21,7 @@ import javax.swing.JTree
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
@@ -31,7 +36,10 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
         addTreeSelectionListener(SelectionListener(this))
         addMouseListener(MouseListener(this))
 
+        TreeSpeedSearch(this, SpeedSearchConvertor(), true)
+
         model.root.castSafelyTo<DefaultMutableTreeNode>()?.userObject = RootStoryNodeUserData("All Stories")
+
         updater.init()
     }
 
@@ -40,7 +48,15 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
     }
 
     fun getSelectionUserData(): Any? {
-        return selectionModel?.selectionPath?.lastPathComponent?.castSafelyTo<DefaultMutableTreeNode>()?.userObject
+        return selectionModel?.selectionPath?.getLastUserDataAsOrNull<Any>()
+    }
+
+
+    private class SpeedSearchConvertor : Convertor<TreePath, String> {
+        override fun convert(o: TreePath): String {
+            val userData = o.getLastUserDataAsOrNull<StoryTreeNodeUserData>()
+            return userData?.toSearchString() ?: ""
+        }
     }
 
     private class TreeExpander(storyTree: StoryTree) : DefaultTreeExpander(storyTree) {
@@ -68,6 +84,7 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
             }
 
             data.renderTreeCell(this)
+            SpeedSearchUtil.applySpeedSearchHighlighting(tree, this, false, selected);
         }
     }
 
@@ -77,9 +94,7 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
 
             if (e.clickCount == 2) {
                 storyTree.getClosestPathForLocation(e.x,e.y)
-                    ?.lastPathComponent
-                    ?.castSafelyTo<DefaultMutableTreeNode>()
-                    ?.getUserObjectAsOrNull<ScenarioNodeUserData>()
+                    ?.getLastUserDataAsOrNull<ScenarioNodeUserData>()
                     ?.jumpToSource()
             }
         }

@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.psi.PsiFile
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.speedSearch.SpeedSearchUtil
 import se.fortnox.intellij.jbehave.ui.storyexplorer.directoryPathRelativeToSourceRoot
 import se.fortnox.intellij.jbehave.ui.storyexplorer.pathAsPackage
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
@@ -47,11 +48,25 @@ class StoryNodeUserData private constructor(
     override fun renderTreeCell(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
         icon = JBehaveIcons.JB
 
-        val pkg = pathAsPackage(_file.directoryPathRelativeToSourceRoot ?: "")
+        val pkg = getPackage()
+        if (pkg.isNotEmpty()) {
+            append("$pkg/")
+        }
 
-        append("$pkg/")
         append(_file.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
     }
+
+    override fun toSearchString(): String {
+        val pkg = getPackage()
+
+        return if (pkg.isNotEmpty()) {
+            "$pkg/${_file.name}"
+        } else {
+            _file.name
+        }
+    }
+
+    private fun getPackage(): String = pathAsPackage(_file.directoryPathRelativeToSourceRoot ?: "")
 
     private fun createPreviewDocument(): PreviewDocument? {
         val document = _file.viewProvider.document ?: return null

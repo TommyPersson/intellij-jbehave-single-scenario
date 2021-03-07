@@ -11,4 +11,8 @@ class RootStoryNodeUserData(
         icon = AllIcons.Actions.GroupByTestProduction
         append(text)
     }
+
+    override fun toSearchString(): String {
+        return ""
+    }
 }

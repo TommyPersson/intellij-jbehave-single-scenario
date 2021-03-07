@@ -67,6 +67,10 @@ class ScenarioNodeUserData private constructor(
         append(_text)
     }
 
+    override fun toSearchString(): String {
+        return _text
+    }
+
     private fun createPreviewDocument(): PreviewDocument? {
         val document = _element.containingFile.viewProvider.document
             ?: return null
