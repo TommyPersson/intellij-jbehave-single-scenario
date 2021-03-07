@@ -5,6 +5,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import se.fortnox.intellij.jbehave.ui.storyexplorer.dirPath
 
 class ModuleNodeUserData(
     val module: Module,
@@ -14,7 +15,7 @@ class ModuleNodeUserData(
         icon = AllIcons.Nodes.Module
 
         val name = module.name
-        val dirPath = ModuleUtil.getModuleDirPath(module)
+        val dirPath = module.dirPath
         val dirName = dirPath.substringAfterLast("/")
 
         if (name != dirName) {

@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
@@ -16,6 +17,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.SearchScope
 import com.intellij.refactoring.suggested.endOffset
 import com.intellij.refactoring.suggested.startOffset
 import com.intellij.util.castSafelyTo
@@ -52,6 +55,18 @@ fun Project.findPsiFile(virtualFile: VirtualFile): PsiFile? {
 
 fun Project.getAllFilesByExtension(extension: String): Collection<VirtualFile> {
     return FilenameIndex.getAllFilesByExt(this, extension)
+}
+
+val Project.modules get(): List<Module> {
+    return ModuleManager.getInstance(this).modules.toList()
+}
+
+fun Module.getAllFilesByExtension(extension: String): Collection<VirtualFile> {
+    return FilenameIndex.getAllFilesByExt(project, extension, GlobalSearchScope.moduleScope(this))
+}
+
+val Module.dirPath get(): String {
+    return ModuleUtil.getModuleDirPath(this)
 }
 
 val PsiFile.containingModule get(): Module? {

@@ -3,8 +3,8 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.tree
 import com.github.kumaraman21.intellijbehave.language.StoryFileType
 import com.github.kumaraman21.intellijbehave.parser.StoryElementType
 import javax.swing.tree.DefaultMutableTreeNode
-import java.util.concurrent.atomic.AtomicInteger
 import com.github.kumaraman21.intellijbehave.parser.StoryFile
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.psi.*
@@ -12,6 +12,7 @@ import com.intellij.psi.util.collectDescendantsOfType
 import com.intellij.psi.util.elementType
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.Alarm
+import com.intellij.util.castSafelyTo
 import com.intellij.util.ui.tree.TreeUtil
 import se.fortnox.intellij.jbehave.ui.storyexplorer.*
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ModuleNodeUserData
@@ -27,6 +28,8 @@ class StoryTreeUpdater(
     private val project: Project,
     private val toolWindow: ToolWindow
 ) {
+    private val storyExtension = StoryFileType.STORY_FILE_TYPE.defaultExtension
+
     private val treeModel get() = storyTree.model as DefaultTreeModel
     private val treeRoot get() = treeModel.root as DefaultMutableTreeNode
 
@@ -45,6 +48,13 @@ class StoryTreeUpdater(
         queueUpdate(true)
     }
 
+    fun queueUpdate(reset: Boolean = false) {
+        updateAlarm.cancelAllRequests()
+        updateAlarm.addRequest({
+            performUpdate(reset)
+        }, 100)
+    }
+
     fun performUpdate(reset: Boolean = false) {
         // Needs to be 'true' while updating the tree?
         // Just setting false in StoryTree.init results in a blank tree
@@ -55,11 +65,7 @@ class StoryTreeUpdater(
             treeModel.reload()
         }
 
-        val storyIndex = AtomicInteger(0)
-
-        for (storyVirtualFile in project.getAllFilesByExtension(StoryFileType.STORY_FILE_TYPE.defaultExtension)) {
-            project.findPsiFile(storyVirtualFile)?.accept(makeVisitor(storyIndex))
-        }
+        updateTree()
 
         if (reset) {
             TreeUtil.expandAll(storyTree)
@@ -70,33 +76,56 @@ class StoryTreeUpdater(
         storyTree.isRootVisible = false
     }
 
-    fun queueUpdate(reset: Boolean = false) {
-        updateAlarm.cancelAllRequests()
-        updateAlarm.addRequest({
-            performUpdate(reset)
-        }, 100)
+    private fun updateTree() {
+        val modules = project.modules.sortedBy { it.dirPath }
+        for (module in modules) {
+            updateTreeWithModule(module)
+        }
     }
 
-    private fun makeVisitor(storyIndex: AtomicInteger): PsiElementVisitor {
-        return object : PsiElementVisitor() {
-            override fun visitFile(file: PsiFile) {
-                if (file !is StoryFile) {
-                    return
-                }
+    private fun updateTreeWithModule(module: Module) {
+        val moduleNode = getOrCreateModuleNode(module)
 
-                val moduleNode = getOrCreateModuleNode(file)
+        val storyFiles = module.getAllFilesByExtension(storyExtension)
+            .sortedBy { it.path }
+            .mapNotNull { project.findPsiFile(it) }
+            .mapNotNull { it.castSafelyTo<StoryFile>() }
 
-                val storyTreeNode = getOrCreateStoryNode(file, storyIndex.getAndIncrement(), moduleNode)
-                updateStoryTreeNode(storyTreeNode, file)
+        for ((storyIndex, storyFile) in storyFiles.withIndex()) {
+            updateTreeWithStoryFile(storyFile, storyIndex, moduleNode)
+        }
+    }
 
-                val scenarioElements = findScenarioElements(file)
-                for ((scenarioIndex, scenarioElement) in scenarioElements.withIndex()) {
-                    val scenarioTreeNode = getOrCreateScenarioNode(scenarioElement, scenarioIndex, storyTreeNode)
-                    updateScenarioNode(scenarioTreeNode, scenarioElement)
-                }
+    private fun updateTreeWithStoryFile(
+        storyFile: StoryFile,
+        storyIndex: Int,
+        moduleNode: DefaultMutableTreeNode
+    ) {
+        val storyTreeNode = getOrCreateStoryNode(storyFile, storyIndex, moduleNode)
 
-                cleanUpStoryTreeNode(storyTreeNode, scenarioElements)
-            }
+        val storyData = storyTreeNode.getUserObjectAsOrNull<StoryNodeUserData>()!!
+        if (storyData.update(storyFile)) {
+            treeModel.nodeChanged(storyTreeNode)
+        }
+
+        val scenarioElements = findScenarioElements(storyFile)
+        for ((scenarioIndex, scenarioElement) in scenarioElements.withIndex()) {
+            updateTreeWithScenario(scenarioElement, scenarioIndex, storyTreeNode)
+        }
+
+        cleanUpStoryTreeNode(storyTreeNode, scenarioElements)
+    }
+
+    private fun updateTreeWithScenario(
+        scenarioElement: PsiElement,
+        scenarioIndex: Int,
+        storyTreeNode: DefaultMutableTreeNode
+    ) {
+        val scenarioTreeNode = getOrCreateScenarioNode(scenarioIndex, storyTreeNode, scenarioElement)
+
+        val scenarioData = scenarioTreeNode.getUserObjectAsOrNull<ScenarioNodeUserData>()!!
+        if (scenarioData.update(scenarioElement)) {
+            treeModel.nodeChanged(scenarioTreeNode)
         }
     }
 
@@ -104,44 +133,18 @@ class StoryTreeUpdater(
         return file.collectDescendantsOfType { it.elementType == StoryElementType.SCENARIO }
     }
 
-    private fun cleanUpStoryTreeNode(
-        storyTreeNode: DefaultMutableTreeNode,
-        scenarios: List<PsiElement>
-    ) {
-        val numScenarioNodes = storyTreeNode.childCount
-        val numScenarios = scenarios.size
+    private fun getOrCreateModuleNode(
+        module: Module,
+    ): DefaultMutableTreeNode {
+        val existingModuleNode = treeRoot.children().toList()
+            .filterIsInstance<DefaultMutableTreeNode>()
+            .firstOrNull { it.getUserObjectAsOrNull<ModuleNodeUserData>()?.module == module }
 
-        if (numScenarioNodes > numScenarios) {
-            for (i in numScenarios until numScenarioNodes) {
-                val scenarioNodeToRemove = storyTreeNode.getChildAtAsOrNull<MutableTreeNode>(numScenarios)
-                storyTreeNode.remove(scenarioNodeToRemove)
-                treeModel.nodesWereRemoved(
-                    storyTreeNode,
-                    intArrayOf(numScenarios),
-                    arrayOf(scenarioNodeToRemove)
-                )
+        return existingModuleNode
+            ?: ModuleNodeUserData.from(module).wrapInTreeNode().also {
+                treeRoot.add(it)
+                treeModel.nodesWereInserted(treeRoot, intArrayOf(treeRoot.childCount - 1))
             }
-        }
-    }
-
-    private fun updateStoryTreeNode(
-        storyTreeNode: DefaultMutableTreeNode,
-        file: PsiFile
-    ) {
-        val storyData = storyTreeNode.getUserObjectAsOrNull<StoryNodeUserData>()!!
-        if (storyData.update(file)) {
-            treeModel.nodeChanged(storyTreeNode)
-        }
-    }
-
-    private fun updateScenarioNode(
-        scenarioTreeNode: DefaultMutableTreeNode,
-        scenario: PsiElement
-    ) {
-        val scenarioData = scenarioTreeNode.getUserObjectAsOrNull<ScenarioNodeUserData>()!!
-        if (scenarioData.update(scenario)) {
-            treeModel.nodeChanged(scenarioTreeNode)
-        }
     }
 
     private fun getOrCreateStoryNode(
@@ -162,14 +165,14 @@ class StoryTreeUpdater(
     }
 
     private fun getOrCreateScenarioNode(
-        scenario: PsiElement,
         scenarioIndex: Int,
-        storyTreeNode: DefaultMutableTreeNode
+        storyTreeNode: DefaultMutableTreeNode,
+        scenarioElement: PsiElement
     ): DefaultMutableTreeNode {
         val needAdditionalScenarioNode = scenarioIndex >= storyTreeNode.childCount
 
         return if (needAdditionalScenarioNode) {
-            ScenarioNodeUserData.from(scenario, storyTree).wrapInTreeNode().also {
+            ScenarioNodeUserData.from(scenarioElement, storyTree).wrapInTreeNode().also {
                 storyTreeNode.add(it)
                 treeModel.nodesWereInserted(storyTreeNode, intArrayOf(storyTreeNode.childCount - 1))
             }
@@ -178,22 +181,22 @@ class StoryTreeUpdater(
         }
     }
 
-    private fun getOrCreateModuleNode(
-        file: PsiFile,
-    ): DefaultMutableTreeNode {
-        val module = file.containingModule!!
+    private fun cleanUpStoryTreeNode(
+        storyTreeNode: DefaultMutableTreeNode,
+        scenarios: List<PsiElement>
+    ) {
+        val numScenarioNodes = storyTreeNode.childCount
+        val numScenarios = scenarios.size
 
-        val existingTreeNode = treeRoot.children().toList()
-            .filterIsInstance<DefaultMutableTreeNode>()
-            .firstOrNull { it.getUserObjectAsOrNull<ModuleNodeUserData>()?.module == module }
-
-        return if (existingTreeNode != null) {
-            // TODO update node
-            existingTreeNode
-        } else {
-            ModuleNodeUserData.from(module).wrapInTreeNode().also {
-                treeRoot.add(it)
-                treeModel.nodesWereInserted(treeRoot, intArrayOf(treeRoot.childCount - 1))
+        if (numScenarioNodes > numScenarios) {
+            for (i in numScenarios until numScenarioNodes) {
+                val scenarioNodeToRemove = storyTreeNode.getChildAtAsOrNull<MutableTreeNode>(numScenarios)
+                storyTreeNode.remove(scenarioNodeToRemove)
+                treeModel.nodesWereRemoved(
+                    storyTreeNode,
+                    intArrayOf(numScenarios),
+                    arrayOf(scenarioNodeToRemove)
+                )
             }
         }
     }
