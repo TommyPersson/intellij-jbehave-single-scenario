@@ -4,15 +4,20 @@ import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
 import com.intellij.util.castSafelyTo
 import java.awt.Component
 import java.awt.event.ActionEvent
@@ -94,4 +99,22 @@ inline fun <reified T : Component> AnActionEvent.getContextComponent(): T? {
 
 fun pathAsPackage(path: String): String {
     return path.trim('/').replace('/', '.')
+}
+
+fun EditorEx.limitToRegion(region: PsiElement) {
+    with (foldingModel) {
+        runBatchFoldingOperation {
+            if (region.startOffset != 0) {
+                addInvisibleFold(0, region.startOffset)
+            }
+
+            if (region.endOffset != region.containingFile.endOffset) {
+                addInvisibleFold(region.endOffset, region.containingFile.endOffset)
+            }
+        }
+    }
+}
+
+fun FoldingModelEx.addInvisibleFold(start: Int, end: Int) {
+    createFoldRegion(start, end, "", null, true)
 }

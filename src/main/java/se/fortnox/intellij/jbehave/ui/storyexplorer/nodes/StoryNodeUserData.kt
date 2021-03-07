@@ -9,7 +9,6 @@ import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.psi.PsiFile
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
-import com.intellij.ui.speedSearch.SpeedSearchUtil
 import se.fortnox.intellij.jbehave.ui.storyexplorer.directoryPathRelativeToSourceRoot
 import se.fortnox.intellij.jbehave.ui.storyexplorer.pathAsPackage
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
@@ -18,31 +17,26 @@ import javax.swing.AbstractAction
 import javax.swing.tree.DefaultMutableTreeNode
 
 class StoryNodeUserData private constructor(
-    private var _file: PsiFile
+    private var file: PsiFile
 ) : StoryTreeNodeUserData {
 
-    private val _popupMenu by lazy { createPopupMenu() }
+    override val popupMenu get() = createPopupMenu()
 
-    override val popupMenu: JBPopupMenu get() = _popupMenu
-
-    override val previewDocument
-        get(): PreviewDocument? {
-            return createPreviewDocument()
-        }
+    override val previewDocument get() = createPreviewDocument()
 
     fun update(file: PsiFile): Boolean {
-        if (_file == file) {
+        if (this.file == file) {
             return false
         }
 
-        _file = file
+        this.file = file
         return true
     }
 
     fun wrapInTreeNode() = DefaultMutableTreeNode(this)
 
     fun jumpToSource() {
-        _file.navigate(true)
+        file.navigate(true)
     }
 
     override fun renderTreeCell(renderer: ColoredTreeCellRenderer): Unit = with(renderer) {
@@ -53,23 +47,23 @@ class StoryNodeUserData private constructor(
             append("$pkg/")
         }
 
-        append(_file.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+        append(file.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
     }
 
     override fun toSearchString(): String {
         val pkg = getPackage()
 
         return if (pkg.isNotEmpty()) {
-            "$pkg/${_file.name}"
+            "$pkg/${file.name}"
         } else {
-            _file.name
+            file.name
         }
     }
 
-    private fun getPackage(): String = pathAsPackage(_file.directoryPathRelativeToSourceRoot ?: "")
+    private fun getPackage(): String = pathAsPackage(file.directoryPathRelativeToSourceRoot ?: "")
 
     private fun createPreviewDocument(): PreviewDocument? {
-        val document = _file.viewProvider.document ?: return null
+        val document = file.viewProvider.document ?: return null
 
         return object : PreviewDocument {
             override val document: Document get() = document
