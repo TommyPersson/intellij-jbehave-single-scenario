@@ -2,10 +2,9 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.nodes
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleUtil
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
-import se.fortnox.intellij.jbehave.ui.storyexplorer.dirPath
+import se.fortnox.intellij.jbehave.utils.dirPath
 
 class ModuleNodeUserData(
     val module: Module,

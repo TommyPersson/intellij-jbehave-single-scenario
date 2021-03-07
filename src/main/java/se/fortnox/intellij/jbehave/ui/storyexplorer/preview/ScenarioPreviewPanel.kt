@@ -5,9 +5,9 @@ import com.intellij.openapi.editor.*
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.util.castSafelyTo
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getNewSelectionUserDataAsOrNull
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryTreeNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.tree.StoryTree
+import se.fortnox.intellij.jbehave.utils.getNewSelectionUserDataAsOrNull
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel

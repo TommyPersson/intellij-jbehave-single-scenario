@@ -9,12 +9,12 @@ import com.intellij.ui.speedSearch.SpeedSearchUtil
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
 import com.intellij.util.containers.Convertor
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getLastUserDataAsOrNull
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getNewSelectionUserDataAsOrNull
-import se.fortnox.intellij.jbehave.ui.storyexplorer.getUserObjectAsOrNull
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.RootStoryNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ScenarioNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryTreeNodeUserData
+import se.fortnox.intellij.jbehave.utils.getLastUserDataAsOrNull
+import se.fortnox.intellij.jbehave.utils.getNewSelectionUserDataAsOrNull
+import se.fortnox.intellij.jbehave.utils.getUserObjectAsOrNull
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JTree

@@ -9,12 +9,10 @@ import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.psi.PsiFile
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
-import se.fortnox.intellij.jbehave.ui.storyexplorer.directoryPathRelativeToSourceRoot
-import se.fortnox.intellij.jbehave.ui.storyexplorer.pathAsPackage
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
+import se.fortnox.intellij.jbehave.utils.directoryPathRelativeToSourceRoot
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
-import javax.swing.tree.DefaultMutableTreeNode
 
 class StoryNodeUserData private constructor(
     private var file: PsiFile
@@ -82,6 +80,10 @@ class StoryNodeUserData private constructor(
         return JBPopupMenu().also {
             it.add(navigateToScenarioActionItem)
         }
+    }
+
+    private fun pathAsPackage(path: String): String {
+        return path.trim('/').replace('/', '.')
     }
 
     companion object {

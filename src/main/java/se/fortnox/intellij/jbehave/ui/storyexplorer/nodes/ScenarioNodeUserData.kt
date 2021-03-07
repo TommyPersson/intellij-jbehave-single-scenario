@@ -13,13 +13,12 @@ import com.intellij.util.castSafelyTo
 import se.fortnox.intellij.jbehave.DebugSingleScenarioAction
 import se.fortnox.intellij.jbehave.JbehaveSingleScenarioAction
 import se.fortnox.intellij.jbehave.RunSingleScenarioAction
-import se.fortnox.intellij.jbehave.ui.storyexplorer.asMenuItem
-import se.fortnox.intellij.jbehave.ui.storyexplorer.limitToRegion
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
+import se.fortnox.intellij.jbehave.utils.asMenuItem
+import se.fortnox.intellij.jbehave.utils.limitToRegion
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.JPopupMenu
-import javax.swing.tree.DefaultMutableTreeNode
 
 class ScenarioNodeUserData private constructor(
     private var element: PsiElement,
