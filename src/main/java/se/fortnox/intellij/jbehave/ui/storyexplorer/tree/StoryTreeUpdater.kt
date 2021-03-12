@@ -38,6 +38,12 @@ class StoryTreeUpdater(
     toolWindow: ToolWindow
 ) : Disposable {
 
+    private sealed class UpdateRequest {
+        object Reset : UpdateRequest()
+        object Normal : UpdateRequest()
+        class SingleStory(val storyFile: StoryFile) : UpdateRequest()
+    }
+
     private val storyExtension = StoryFileType.STORY_FILE_TYPE.defaultExtension
 
     private val treeModel get() = storyTree.model as DefaultTreeModel
@@ -46,6 +52,7 @@ class StoryTreeUpdater(
     private val updateRequests = MutableSharedFlow<UpdateRequest>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val storyDirectories = mutableListOf<VirtualFile>()
+    private val storyFileNodeIndex = mutableMapOf<StoryFile, DefaultMutableTreeNode>()
 
     private var updateJob: Job? = null
 
@@ -56,23 +63,39 @@ class StoryTreeUpdater(
 
         updateJob = GlobalScope.launch(Dispatchers.Swing) {
             updateRequests.debounce(100).collect {
-                performUpdate(it.reset)
+                handleUpdateRequest(it)
             }
         }
 
-        queueUpdate(true)
+        queueFullTreeReset()
     }
 
     override fun dispose() {
         updateJob?.cancel()
     }
 
-    fun queueUpdate(reset: Boolean = false) {
-        updateRequests.tryEmit(UpdateRequest(reset))
+    fun queueFullTreeReset() {
+        updateRequests.tryEmit(UpdateRequest.Reset)
+    }
+
+    private fun queueFullTreeUpdate() {
+        updateRequests.tryEmit(UpdateRequest.Normal)
+    }
+
+    private fun queueSingleStoryNodeUpdate(storyFile: StoryFile) {
+        updateRequests.tryEmit(UpdateRequest.SingleStory(storyFile))
+    }
+
+    private suspend fun handleUpdateRequest(updateRequest: UpdateRequest) {
+        when (updateRequest) {
+            is UpdateRequest.Reset -> performFullTreeUpdate(true)
+            is UpdateRequest.Normal -> performFullTreeUpdate(false)
+            is UpdateRequest.SingleStory -> performSingleStoryUpdate(updateRequest.storyFile)
+        }
     }
 
     @Suppress("UnstableApiUsage")
-    private suspend fun performUpdate(reset: Boolean = false) {
+    private suspend fun performFullTreeUpdate(reset: Boolean = false) {
         if (reset) {
             treeRoot.removeAllChildren()
             treeModel.reload()
@@ -87,8 +110,22 @@ class StoryTreeUpdater(
         }
     }
 
+    private suspend fun performSingleStoryUpdate(storyFile: StoryFile) {
+        val storyNode = storyFileNodeIndex[storyFile]
+        if (storyNode == null) {
+            performFullTreeUpdate(false)
+            return
+        }
+
+        val moduleNode = storyNode.parent as DefaultMutableTreeNode
+        val indexOfStoryNode = moduleNode.getIndex(storyNode)
+
+        updateTreeWithStoryFile(storyFile, indexOfStoryNode, moduleNode)
+    }
+
     private suspend fun updateTree() {
         storyDirectories.clear()
+        storyFileNodeIndex.clear()
 
         val modules = project.modules.sortedBy { it.contentRootPath }
         for (module in modules) {
@@ -106,8 +143,11 @@ class StoryTreeUpdater(
             .mapNotNull { it.castSafelyTo<StoryFile>() }
 
         for ((storyIndex, storyFile) in storyFiles.withIndex()) {
+            val storyNode = updateTreeWithStoryFile(storyFile, storyIndex, moduleNode)
+
             storyDirectories.add(storyFile.virtualFile.parent)
-            updateTreeWithStoryFile(storyFile, storyIndex, moduleNode)
+            storyFileNodeIndex[storyFile] = storyNode
+
             allowOtherUiTasksToDoWork()
         }
 
@@ -118,7 +158,7 @@ class StoryTreeUpdater(
         storyFile: StoryFile,
         storyIndex: Int,
         moduleNode: DefaultMutableTreeNode
-    ) {
+    ): DefaultMutableTreeNode {
         val storyTreeNode = getOrCreateStoryNode(storyFile, storyIndex, moduleNode)
 
         val storyData = storyTreeNode.getUserObjectAsOrNull<StoryNodeUserData>()!!
@@ -132,6 +172,8 @@ class StoryTreeUpdater(
         }
 
         cleanUpStoryTreeNode(storyTreeNode, scenarioElements)
+
+        return storyTreeNode
     }
 
     private fun updateTreeWithScenario(
@@ -245,10 +287,9 @@ class StoryTreeUpdater(
 
     private inner class PsiTreeChangeListener : PsiTreeChangeAdapter() {
         override fun childrenChanged(event: PsiTreeChangeEvent) {
-            val shouldQueueUpdate = event.file is StoryFile
-
-            if (shouldQueueUpdate) {
-                queueUpdate()
+            val file = event.file
+            if (file is StoryFile) {
+                queueSingleStoryNodeUpdate(file)
             }
         }
 
@@ -256,7 +297,7 @@ class StoryTreeUpdater(
             val shouldQueueUpdate = event.child is StoryFile
 
             if (shouldQueueUpdate) {
-                queueUpdate()
+                queueFullTreeUpdate()
             }
         }
 
@@ -270,7 +311,7 @@ class StoryTreeUpdater(
             }
 
             if (shouldQueueUpdate) {
-                queueUpdate()
+                queueFullTreeUpdate()
             }
         }
 
@@ -278,10 +319,8 @@ class StoryTreeUpdater(
             val shouldQueueUpdate = event.propertyName == PsiTreeChangeEvent.PROP_FILE_TYPES
 
             if (shouldQueueUpdate) {
-                queueUpdate()
+                queueFullTreeUpdate()
             }
         }
     }
-
-    class UpdateRequest(val reset: Boolean)
 }

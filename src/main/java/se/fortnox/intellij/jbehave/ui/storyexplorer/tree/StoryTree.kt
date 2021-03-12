@@ -44,7 +44,7 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
     }
 
     fun refresh() {
-        updater.queueUpdate(reset = true)
+        updater.queueFullTreeReset()
     }
 
     fun getSelectionUserData(): Any? {
