@@ -51,7 +51,6 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
         return selectionModel?.selectionPath?.getLastUserDataAsOrNull<Any>()
     }
 
-
     private class SpeedSearchConvertor : Convertor<TreePath, String> {
         override fun convert(o: TreePath): String {
             val userData = o.getLastUserDataAsOrNull<StoryTreeNodeUserData>()

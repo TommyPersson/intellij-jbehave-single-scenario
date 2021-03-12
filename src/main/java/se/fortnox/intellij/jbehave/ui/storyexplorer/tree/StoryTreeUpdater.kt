@@ -6,6 +6,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 import com.github.kumaraman21.intellijbehave.parser.StoryFile
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.psi.*
 import com.intellij.psi.util.collectDescendantsOfType
@@ -35,16 +36,10 @@ class StoryTreeUpdater(
 
     private val updateAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, toolWindow.disposable)
 
-    fun init() {
-        PsiManager.getInstance(project).addPsiTreeChangeListener(
-            object : PsiTreeChangeAdapter() {
-                override fun childrenChanged(event: PsiTreeChangeEvent) {
-                    queueUpdate()
-                }
-            },
-            toolWindow.disposable
-        )
+    private val storyDirectories = mutableListOf<VirtualFile>()
 
+    fun init() {
+        PsiManager.getInstance(project).addPsiTreeChangeListener(PsiTreeChangeListener(), toolWindow.disposable)
         queueUpdate(true)
     }
 
@@ -77,6 +72,8 @@ class StoryTreeUpdater(
     }
 
     private fun updateTree() {
+        storyDirectories.clear()
+
         val modules = project.modules.sortedBy { it.contentRootPath }
         for (module in modules) {
             updateTreeWithModule(module)
@@ -91,9 +88,13 @@ class StoryTreeUpdater(
             .mapNotNull { project.findPsiFile(it) }
             .mapNotNull { it.castSafelyTo<StoryFile>() }
 
+        storyDirectories.addAll(storyFiles.map { it.virtualFile.parent })
+
         for ((storyIndex, storyFile) in storyFiles.withIndex()) {
             updateTreeWithStoryFile(storyFile, storyIndex, moduleNode)
         }
+
+        cleanUpModuleTreeNode(moduleNode, storyFiles)
     }
 
     private fun updateTreeWithStoryFile(
@@ -181,6 +182,26 @@ class StoryTreeUpdater(
         }
     }
 
+    private fun cleanUpModuleTreeNode(
+        moduleTreeNode: DefaultMutableTreeNode,
+        stories: List<PsiFile>
+    ) {
+        val numStoryNodes = moduleTreeNode.childCount
+        val numStories = stories.size
+
+        if (numStoryNodes > numStories) {
+            for (i in numStories until numStoryNodes) {
+                val storyNodeToRemove = moduleTreeNode.getChildAtAsOrNull<MutableTreeNode>(numStories)
+                moduleTreeNode.remove(storyNodeToRemove)
+                treeModel.nodesWereRemoved(
+                    moduleTreeNode,
+                    intArrayOf(numStories),
+                    arrayOf(storyNodeToRemove)
+                )
+            }
+        }
+    }
+
     private fun cleanUpStoryTreeNode(
         storyTreeNode: DefaultMutableTreeNode,
         scenarios: List<PsiElement>
@@ -197,6 +218,38 @@ class StoryTreeUpdater(
                     intArrayOf(numScenarios),
                     arrayOf(scenarioNodeToRemove)
                 )
+            }
+        }
+    }
+
+    private inner class PsiTreeChangeListener : PsiTreeChangeAdapter() {
+        override fun childrenChanged(event: PsiTreeChangeEvent) {
+            val shouldQueueUpdate = event.file is StoryFile
+
+            if (shouldQueueUpdate) {
+                queueUpdate()
+            }
+        }
+
+        override fun childAdded(event: PsiTreeChangeEvent) {
+            val shouldQueueUpdate = event.child is StoryFile
+
+            if (shouldQueueUpdate) {
+                queueUpdate()
+            }
+        }
+
+        override fun childRemoved(event: PsiTreeChangeEvent) {
+            val child = event.child
+
+            val shouldQueueUpdate = when (child) {
+                is StoryFile -> true
+                is PsiDirectory -> storyDirectories.contains(child.virtualFile)
+                else -> false
+            }
+
+            if (shouldQueueUpdate) {
+                queueUpdate()
             }
         }
     }
