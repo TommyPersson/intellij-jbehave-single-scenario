@@ -2,59 +2,77 @@ package se.fortnox.intellij.jbehave.ui.storyexplorer.tree
 
 import com.github.kumaraman21.intellijbehave.language.StoryFileType
 import com.github.kumaraman21.intellijbehave.parser.StoryElementType
-import javax.swing.tree.DefaultMutableTreeNode
 import com.github.kumaraman21.intellijbehave.parser.StoryFile
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.psi.*
 import com.intellij.psi.util.collectDescendantsOfType
 import com.intellij.psi.util.elementType
 import com.intellij.ui.treeStructure.Tree
-import com.intellij.util.Alarm
 import com.intellij.util.castSafelyTo
 import com.intellij.util.ui.tree.TreeUtil
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.swing.Swing
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ModuleNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ScenarioNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.wrapInTreeNode
 import se.fortnox.intellij.jbehave.utils.*
+import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
 
 
+@Suppress("EXPERIMENTAL_API_USAGE")
 class StoryTreeUpdater(
     private val storyTree: Tree,
     private val project: Project,
-    private val toolWindow: ToolWindow
-) {
+    toolWindow: ToolWindow
+) : Disposable {
+
     private val storyExtension = StoryFileType.STORY_FILE_TYPE.defaultExtension
 
     private val treeModel get() = storyTree.model as DefaultTreeModel
     private val treeRoot get() = treeModel.root as DefaultMutableTreeNode
 
-    private val updateAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, toolWindow.disposable)
+    private val updateRequests = MutableSharedFlow<UpdateRequest>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val storyDirectories = mutableListOf<VirtualFile>()
 
-    fun init() {
-        PsiManager.getInstance(project).addPsiTreeChangeListener(PsiTreeChangeListener(), toolWindow.disposable)
+    private var updateJob: Job? = null
+
+    init {
+        Disposer.register(toolWindow.disposable, this)
+
+        PsiManager.getInstance(project).addPsiTreeChangeListener(PsiTreeChangeListener(), this)
+
+        updateJob = GlobalScope.launch(Dispatchers.Swing) {
+            updateRequests.debounce(100).collect {
+                performUpdate(it.reset)
+            }
+        }
+
         queueUpdate(true)
     }
 
-    fun queueUpdate(reset: Boolean = false) {
-        updateAlarm.cancelAllRequests()
-        updateAlarm.addRequest({
-            performUpdate(reset)
-        }, 100)
+    override fun dispose() {
+        updateJob?.cancel()
     }
 
-    fun performUpdate(reset: Boolean = false) {
-        // Needs to be 'true' while updating the tree?
-        // Just setting false in StoryTree.init results in a blank tree
-        storyTree.isRootVisible = true
+    fun queueUpdate(reset: Boolean = false) {
+        updateRequests.tryEmit(UpdateRequest(reset))
+    }
 
+    @Suppress("UnstableApiUsage")
+    private suspend fun performUpdate(reset: Boolean = false) {
         if (reset) {
             treeRoot.removeAllChildren()
             treeModel.reload()
@@ -67,20 +85,19 @@ class StoryTreeUpdater(
         } else {
             storyTree.expandRow(0)
         }
-
-        storyTree.isRootVisible = false
     }
 
-    private fun updateTree() {
+    private suspend fun updateTree() {
         storyDirectories.clear()
 
         val modules = project.modules.sortedBy { it.contentRootPath }
         for (module in modules) {
             updateTreeWithModule(module)
+            allowOtherUiTasksToDoWork()
         }
     }
 
-    private fun updateTreeWithModule(module: Module) {
+    private suspend fun updateTreeWithModule(module: Module) {
         val moduleNode = getOrCreateModuleNode(module)
 
         val storyFiles = module.getAllFilesByExtension(storyExtension)
@@ -88,10 +105,10 @@ class StoryTreeUpdater(
             .mapNotNull { project.findPsiFile(it) }
             .mapNotNull { it.castSafelyTo<StoryFile>() }
 
-        storyDirectories.addAll(storyFiles.map { it.virtualFile.parent })
-
         for ((storyIndex, storyFile) in storyFiles.withIndex()) {
+            storyDirectories.add(storyFile.virtualFile.parent)
             updateTreeWithStoryFile(storyFile, storyIndex, moduleNode)
+            allowOtherUiTasksToDoWork()
         }
 
         cleanUpModuleTreeNode(moduleNode, storyFiles)
@@ -222,6 +239,10 @@ class StoryTreeUpdater(
         }
     }
 
+    private suspend fun allowOtherUiTasksToDoWork() {
+        delay(0)
+    }
+
     private inner class PsiTreeChangeListener : PsiTreeChangeAdapter() {
         override fun childrenChanged(event: PsiTreeChangeEvent) {
             val shouldQueueUpdate = event.file is StoryFile
@@ -252,5 +273,15 @@ class StoryTreeUpdater(
                 queueUpdate()
             }
         }
+
+        override fun propertyChanged(event: PsiTreeChangeEvent) {
+            val shouldQueueUpdate = event.propertyName == PsiTreeChangeEvent.PROP_FILE_TYPES
+
+            if (shouldQueueUpdate) {
+                queueUpdate()
+            }
+        }
     }
+
+    class UpdateRequest(val reset: Boolean)
 }

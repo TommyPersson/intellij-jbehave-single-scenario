@@ -30,6 +30,7 @@ sourceSets {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile('org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.4.2')
     provided files('lib/idea-junit.jar')
 }
 

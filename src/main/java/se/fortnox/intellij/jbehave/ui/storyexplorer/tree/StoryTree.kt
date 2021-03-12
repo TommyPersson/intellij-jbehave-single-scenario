@@ -40,11 +40,11 @@ class StoryTree(project: Project, toolWindow: ToolWindow) : Tree() {
 
         model.root.castSafelyTo<DefaultMutableTreeNode>()?.userObject = RootStoryNodeUserData("All Stories")
 
-        updater.init()
+        isRootVisible = false
     }
 
     fun refresh() {
-        updater.performUpdate(reset = true)
+        updater.queueUpdate(reset = true)
     }
 
     fun getSelectionUserData(): Any? {
