@@ -23,7 +23,7 @@ class StoryExplorerPanel(project: Project, toolWindow: ToolWindow) : JPanel(Bord
 
     val storyTree = StoryTree(project, toolWindow)
 
-    val previewPanel = ScenarioPreviewPanel(project, storyTree)
+    val previewPanel = ScenarioPreviewPanel(project, storyTree, toolWindow)
 
     init {
         val scrollPane = createScrollPane()

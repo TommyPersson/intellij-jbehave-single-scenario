@@ -1,9 +1,12 @@
 package se.fortnox.intellij.jbehave.ui.storyexplorer.preview
 
 import com.github.kumaraman21.intellijbehave.language.StoryFileType
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.*
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.wm.ToolWindow
 import com.intellij.util.castSafelyTo
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryTreeNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.tree.StoryTree
@@ -17,8 +20,9 @@ import kotlin.reflect.KProperty
 
 class ScenarioPreviewPanel(
     private val project: Project,
-    storyTree: StoryTree
-) {
+    storyTree: StoryTree,
+    toolWindow: ToolWindow
+): Disposable {
     private val previewPanel = JPanel(BorderLayout())
 
     private var editor: EditorEx? by Delegates.observable(null, ::onEditorChanged)
@@ -29,6 +33,12 @@ class ScenarioPreviewPanel(
 
     init {
         storyTree.addTreeSelectionListener(::onTreeSelectionChanged)
+
+        Disposer.register(toolWindow.disposable, this)
+    }
+
+    override fun dispose() {
+        editor = null
     }
 
     private fun onTreeSelectionChanged(e: TreeSelectionEvent) {
