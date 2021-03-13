@@ -27,10 +27,12 @@ abstract class RunSelectedNodeActionBase : AnAction() {
             e.presentation.isEnabled = true
             e.presentation.text = action.templatePresentation.text
             e.presentation.description = action.templatePresentation.description
+            e.presentation.icon = action.templatePresentation.icon
         } else {
             e.presentation.isEnabled = false
             e.presentation.text = this.templatePresentation.text
             e.presentation.description = this.templatePresentation.description
+            e.presentation.icon = this.templatePresentation.icon
         }
     }
 

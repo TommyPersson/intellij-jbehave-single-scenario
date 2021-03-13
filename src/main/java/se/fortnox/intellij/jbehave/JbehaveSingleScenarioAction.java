@@ -1,14 +1,10 @@
 package se.fortnox.intellij.jbehave;
 
-import com.google.common.base.CaseFormat;
-import com.intellij.compiler.options.CompileStepBeforeRun;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.junit.JUnitConfiguration;
-import com.intellij.execution.junit.JUnitConfigurationType;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -25,13 +21,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import se.fortnox.intellij.jbehave.utils.RunManagerUtils;
+import se.fortnox.intellij.jbehave.utils.StoryFileUtils;
 
 import javax.swing.*;
-
-import static java.util.Arrays.asList;
 
 public abstract class JbehaveSingleScenarioAction extends AnAction implements FileEditorProvider {
 
@@ -53,7 +48,11 @@ public abstract class JbehaveSingleScenarioAction extends AnAction implements Fi
 	}
 
 	public void actionPerformed(AnActionEvent e) {
-		Project     project   = e.getProject();
+		Project project = e.getProject();
+		if (project == null) {
+			return;
+		}
+
 		VirtualFile storyFile = getStoryFile(project);
 		if (storyFile == null) {
 			return;
@@ -64,11 +63,11 @@ public abstract class JbehaveSingleScenarioAction extends AnAction implements Fi
 			return;
 		}
 
-		PsiClass mainClass = getStoryClass(project, storyFile);
+		PsiClass mainClass = StoryFileUtils.findJavaTestClass(storyFile, project);
 
 		RunManager                     runManager    = RunManager.getInstance(project);
 		RunnerAndConfigurationSettings configuration = createConfiguration(storyFile, scenario, mainClass, runManager);
-		runManager.addConfiguration(configuration, false);
+		runManager.addConfiguration(configuration);
 		runManager.setSelectedConfiguration(configuration);
 
 		executeJUnit(project, configuration.getConfiguration());
@@ -86,34 +85,11 @@ public abstract class JbehaveSingleScenarioAction extends AnAction implements Fi
 	}
 
 	private RunnerAndConfigurationSettings createConfiguration(VirtualFile storyFile, String scenario, PsiClass mainClass, RunManager runManager) {
-		String                         name               = storyFile.getPresentableName() + ":" + scenario;
-		RunnerAndConfigurationSettings configuration      = runManager.createConfiguration(name, JUnitConfigurationType.class);
-		JUnitConfiguration             jUnitConfiguration = (JUnitConfiguration)configuration.getConfiguration();
-		jUnitConfiguration.setMainClass(mainClass);
+		String name     = storyFile.getPresentableName() + ":" + scenario;
 		String filter   = ScenarioUtils.scenarioFilterFromName(scenario);
 		String vmParams = "-DmetaFilters=\"+scenario_title " + filter + "\"";
-		if (jUnitConfiguration.getVMParameters() != null) {
-			vmParams = jUnitConfiguration.getVMParameters() + " " + vmParams;
-		}
-		jUnitConfiguration.setVMParameters(vmParams);
-		jUnitConfiguration.setBeforeRunTasks(asList(new CompileStepBeforeRun.MakeBeforeRunTask()));
-		return configuration;
-	}
 
-	private PsiClass getStoryClass(Project project, VirtualFile storyFile) {
-		String pkg = storyFile.getParent()
-			.getPath()
-			.substring(storyFile.getPath().indexOf("src/test/resources") + "src/test/resources".length())
-			.replace("/", ".")
-			.replaceAll("^\\.", "");
-
-		String className = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, storyFile.getName().replace(".story", ""));
-
-		String qualifiedName = pkg.isEmpty() ? className : (pkg + "." + className);
-
-		return JavaPsiFacade.getInstance(project).findClass(
-			qualifiedName,
-			GlobalSearchScope.projectScope(project));
+		return RunManagerUtils.createJUnitConfiguration(runManager, name, mainClass, vmParams);
 	}
 
 	private VirtualFile getStoryFile(Project project) {

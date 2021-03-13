@@ -59,7 +59,7 @@ class StoryTreeUpdater(
     init {
         Disposer.register(toolWindow.disposable, this)
 
-        PsiManager.getInstance(project).addPsiTreeChangeListener(PsiTreeChangeListener(), this)
+        project.addPsiTreeChangeListener(PsiTreeChangeListener(), this)
 
         updateJob = GlobalScope.launch(Dispatchers.Swing) {
             updateRequests.debounce(100).collect {
@@ -94,7 +94,6 @@ class StoryTreeUpdater(
         }
     }
 
-    @Suppress("UnstableApiUsage")
     private suspend fun performFullTreeUpdate(reset: Boolean = false) {
         if (reset) {
             treeRoot.removeAllChildren()
@@ -208,14 +207,14 @@ class StoryTreeUpdater(
     }
 
     private fun getOrCreateStoryNode(
-        file: PsiFile,
+        file: StoryFile,
         storyIndex: Int,
         moduleNode: DefaultMutableTreeNode
     ): DefaultMutableTreeNode {
         val needAdditionalStoryNode = storyIndex >= moduleNode.childCount
 
         return if (needAdditionalStoryNode) {
-            StoryNodeUserData.from(file).wrapInTreeNode().also {
+            StoryNodeUserData.from(file, storyTree).wrapInTreeNode().also {
                 moduleNode.add(it)
                 treeModel.nodesWereInserted(moduleNode, intArrayOf(moduleNode.childCount - 1))
             }

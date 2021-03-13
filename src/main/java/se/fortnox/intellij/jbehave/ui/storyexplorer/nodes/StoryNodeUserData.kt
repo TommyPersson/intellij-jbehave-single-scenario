@@ -1,28 +1,37 @@
 package se.fortnox.intellij.jbehave.ui.storyexplorer.nodes
 
 import com.github.kumaraman21.intellijbehave.language.JBehaveIcons
+import com.github.kumaraman21.intellijbehave.parser.StoryFile
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
-import com.intellij.psi.PsiFile
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.treeStructure.Tree
+import se.fortnox.intellij.jbehave.DebugStoryAction
+import se.fortnox.intellij.jbehave.RunStoryAction
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
+import se.fortnox.intellij.jbehave.utils.asMenuItem
 import se.fortnox.intellij.jbehave.utils.directoryPathRelativeToSourceRoot
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
+import javax.swing.JPopupMenu
 
 class StoryNodeUserData private constructor(
-    private var file: PsiFile
+    private var file: StoryFile,
+    private val tree: Tree
 ) : StoryTreeNodeUserData {
 
     override val popupMenu get() = createPopupMenu()
 
     override val previewDocument get() = createPreviewDocument()
 
-    fun update(file: PsiFile): Boolean {
+    val runAction get() = RunStoryAction(file)
+    val debugAction get() = DebugStoryAction(file)
+
+    fun update(file: StoryFile): Boolean {
         if (this.file == file) {
             return false
         }
@@ -79,6 +88,9 @@ class StoryNodeUserData private constructor(
 
         return JBPopupMenu().also {
             it.add(navigateToScenarioActionItem)
+            it.add(JPopupMenu.Separator())
+            it.add(runAction.asMenuItem(tree))
+            it.add(debugAction.asMenuItem(tree))
         }
     }
 
@@ -87,6 +99,6 @@ class StoryNodeUserData private constructor(
     }
 
     companion object {
-        fun from(file: PsiFile) = StoryNodeUserData(file)
+        fun from(file: StoryFile, tree: Tree) = StoryNodeUserData(file, tree)
     }
 }
