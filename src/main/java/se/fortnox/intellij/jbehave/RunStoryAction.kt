@@ -1,5 +1,8 @@
 package se.fortnox.intellij.jbehave
 
-import com.github.kumaraman21.intellijbehave.parser.StoryFile
-
-class RunStoryAction(storyFile: StoryFile) : RunStoryActionBase(storyFile, RunMode.Run)
+class RunStoryAction(
+    storyFileAndProject: StoryFileAndProject?
+) : RunStoryActionBase(storyFileAndProject, RunMode.Run) {
+    @Suppress("unused")
+    constructor() : this(null)
+}

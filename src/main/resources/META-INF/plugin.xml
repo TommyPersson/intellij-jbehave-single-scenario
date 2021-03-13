@@ -10,20 +10,32 @@
 
 	<actions>
 		<group id="DebugSingleScenarioGroup" text="Debug This Scenario" description="Debug single scenario">
-			<add-to-group group-id="EditorPopupMenu" anchor="last" />
+			<add-to-group group-id="RunContextGroup" anchor="first"/>
 			<action
-				id="RunSingleScenarioAction"
-				class="se.fortnox.intellij.jbehave.RunSingleScenarioAction"
-				text="Run This Scenario"
-				icon="AllIcons.Actions.Execute"
-				description="Run single scenario"
+					id="se.fortnox.intellij.jbehave.RunStoryAction"
+					class="se.fortnox.intellij.jbehave.RunStoryAction"
+					text="Run Story"
+					icon="AllIcons.Actions.Execute"
 			/>
 			<action
-				id="DebugSingleScenarioAction"
-				class="se.fortnox.intellij.jbehave.DebugSingleScenarioAction"
-				text="Debug This Scenario"
-				icon="AllIcons.Actions.StartDebugger"
-				description="Debug single scenario"
+					id="se.fortnox.intellij.jbehave.DebugStoryAction"
+					class="se.fortnox.intellij.jbehave.DebugStoryAction"
+					text="Debug Story"
+					icon="AllIcons.Actions.StartDebugger"
+			/>
+			<action
+					id="RunSingleScenarioAction"
+					class="se.fortnox.intellij.jbehave.RunSingleScenarioAction"
+					text="Run This Scenario"
+					icon="AllIcons.Actions.Execute"
+					description="Run single scenario"
+			/>
+			<action
+					id="DebugSingleScenarioAction"
+					class="se.fortnox.intellij.jbehave.DebugSingleScenarioAction"
+					text="Debug This Scenario"
+					icon="AllIcons.Actions.StartDebugger"
+					description="Debug single scenario"
 			/>
 		</group>
 	</actions>
@@ -32,5 +44,5 @@
 	<depends>com.intellij.modules.java</depends>
 	<depends optional="true" config-file="withJBehaveSupport-plugin.xml">jbehave-support-plugin</depends>
 
-	<idea-version since-build="203" />
+	<idea-version since-build="203"/>
 </idea-plugin>

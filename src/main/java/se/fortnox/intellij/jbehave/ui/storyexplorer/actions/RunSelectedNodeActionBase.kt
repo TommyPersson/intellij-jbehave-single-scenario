@@ -25,7 +25,7 @@ abstract class RunSelectedNodeActionBase : AnAction() {
 
         if (action != null) {
             e.presentation.isEnabled = true
-            e.presentation.text = action.templatePresentation.text
+            e.presentation.setText(action.templatePresentation.text, false)
             e.presentation.description = action.templatePresentation.description
             e.presentation.icon = action.templatePresentation.icon
         } else {

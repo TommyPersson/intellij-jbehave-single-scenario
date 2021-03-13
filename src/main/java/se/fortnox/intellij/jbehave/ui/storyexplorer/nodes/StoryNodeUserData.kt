@@ -12,6 +12,7 @@ import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.treeStructure.Tree
 import se.fortnox.intellij.jbehave.DebugStoryAction
 import se.fortnox.intellij.jbehave.RunStoryAction
+import se.fortnox.intellij.jbehave.StoryFileAndProject
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
 import se.fortnox.intellij.jbehave.utils.asMenuItem
 import se.fortnox.intellij.jbehave.utils.directoryPathRelativeToSourceRoot
@@ -28,8 +29,8 @@ class StoryNodeUserData private constructor(
 
     override val previewDocument get() = createPreviewDocument()
 
-    val runAction get() = RunStoryAction(file)
-    val debugAction get() = DebugStoryAction(file)
+    val runAction get() = RunStoryAction(StoryFileAndProject(file.virtualFile, file.project))
+    val debugAction get() = DebugStoryAction(StoryFileAndProject(file.virtualFile, file.project))
 
     fun update(file: StoryFile): Boolean {
         if (this.file == file) {
