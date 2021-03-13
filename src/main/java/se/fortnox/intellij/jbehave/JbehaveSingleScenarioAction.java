@@ -52,7 +52,7 @@ public abstract class JbehaveSingleScenarioAction extends AnAction {
 		String      scenarioTitle = data.getScenarioTitle();
 
 		try {
-			PsiClass mainClass = StoryFileUtils.findJavaTestClass(storyFile, project);
+			PsiClass mainClass = StoryFileUtils.findStoryClass(storyFile, project);
 			if (mainClass == null) {
 				throw new Exception("Unable to find class file for " + storyFile.getPresentableName());
 			}

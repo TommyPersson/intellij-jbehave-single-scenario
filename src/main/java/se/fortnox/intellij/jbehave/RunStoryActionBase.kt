@@ -14,7 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import se.fortnox.intellij.jbehave.utils.createJUnitConfiguration
-import se.fortnox.intellij.jbehave.utils.findJavaTestClass
+import se.fortnox.intellij.jbehave.utils.findStoryClass
 import javax.swing.Icon
 
 
@@ -91,7 +91,7 @@ abstract class RunStoryActionBase(
     }
 
     private fun createRunProfile(storyFile: VirtualFile, project: Project): RunProfile {
-        val mainClass = findJavaTestClass(storyFile, project)
+        val mainClass = findStoryClass(storyFile, project)
             ?: error("Unable to find class file for ${storyFile.presentableName}")
 
         return with(RunManager.getInstance(project)) {

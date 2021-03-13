@@ -11,6 +11,7 @@ import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.treeStructure.Tree
 import se.fortnox.intellij.jbehave.DebugStoryAction
+import se.fortnox.intellij.jbehave.GoToStoryClassAction
 import se.fortnox.intellij.jbehave.RunStoryAction
 import se.fortnox.intellij.jbehave.StoryFileAndProject
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
@@ -87,8 +88,11 @@ class StoryNodeUserData private constructor(
             it.icon = AllIcons.Actions.EditSource
         }
 
+        val navigateToStoryClassAction = GoToStoryClassAction(file.project, file.virtualFile)
+
         return JBPopupMenu().also {
             it.add(navigateToScenarioActionItem)
+            it.add(navigateToStoryClassAction.asMenuItem(tree))
             it.add(JPopupMenu.Separator())
             it.add(runAction.asMenuItem(tree))
             it.add(debugAction.asMenuItem(tree))

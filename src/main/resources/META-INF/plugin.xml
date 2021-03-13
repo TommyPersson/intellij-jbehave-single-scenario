@@ -38,6 +38,18 @@
 					description="Debug single scenario"
 			/>
 		</group>
+		<group id="DebugSingleScenario_GoToStoryClassGroup">
+			<add-to-group group-id="EditorPopupMenu" anchor="last" />
+			<add-to-group group-id="ProjectViewPopupMenu" anchor="last" />
+			<separator />
+			<action
+					id="se.fortnox.intellij.jbehave.GoToStoryClassAction"
+					class="se.fortnox.intellij.jbehave.GoToStoryClassAction"
+					text="Go to Story Class"
+					description="Go to story class"
+					icon="AllIcons.Actions.EditSource"
+			/>
+		</group>
 	</actions>
 
 	<depends>JUnit</depends>
