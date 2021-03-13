@@ -1,6 +1,7 @@
 package se.fortnox.intellij.jbehave;
 
 import org.junit.Test;
+import se.fortnox.intellij.jbehave.utils.ScenarioUtils;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,7 +23,7 @@ public class ScenarioUtilsTest {
 		}
 
 		private String run(String str) {
-			return ScenarioUtils.scenarioFilterFromName(str);
+			return ScenarioUtils.createScenarioFilterFromTitle(str);
 		}
 	}
 }

@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.icons.AllIcons
+import se.fortnox.intellij.jbehave.utils.ScenarioUtils
 
 class SingleScenarioRunLineMarkerProvider : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
@@ -12,20 +13,22 @@ class SingleScenarioRunLineMarkerProvider : RunLineMarkerContributor() {
             return null
         }
 
-        if (element !is LeafPsiElement || !element.text.startsWith(JbehaveSingleScenarioAction.SCENARIO_PREFIX)) {
+        if (element !is LeafPsiElement || !element.text.startsWith(ScenarioUtils.SCENARIO_PREFIX)) {
             return null
         }
 
-        val scenario = JbehaveSingleScenarioAction.findScenario(element.parent.text, 0)
+        val scenario = ScenarioUtils.findScenarioTitleInText(element.parent.text, 0)
             ?: return null
 
         val storyFile = element.getContainingFile().virtualFile
 
+        val actionData = SingleScenarioActionData(storyFile, element.project, scenario)
+
         return Info(
             AllIcons.Actions.Execute,
             null,
-            RunSingleScenarioAction(scenario, storyFile),
-            DebugSingleScenarioAction(scenario, storyFile)
+            RunSingleScenarioAction(actionData),
+            DebugSingleScenarioAction(actionData)
         )
     }
 }

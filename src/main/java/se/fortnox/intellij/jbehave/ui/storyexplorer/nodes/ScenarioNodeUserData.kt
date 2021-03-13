@@ -11,8 +11,9 @@ import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.castSafelyTo
 import se.fortnox.intellij.jbehave.DebugSingleScenarioAction
-import se.fortnox.intellij.jbehave.JbehaveSingleScenarioAction
 import se.fortnox.intellij.jbehave.RunSingleScenarioAction
+import se.fortnox.intellij.jbehave.utils.ScenarioUtils
+import se.fortnox.intellij.jbehave.SingleScenarioActionData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.preview.PreviewDocument
 import se.fortnox.intellij.jbehave.utils.asMenuItem
 import se.fortnox.intellij.jbehave.utils.limitToRegion
@@ -31,8 +32,13 @@ class ScenarioNodeUserData private constructor(
 
     override val previewDocument get() = createPreviewDocument()
 
-    val runAction get() = element.containingFile?.virtualFile?.let { RunSingleScenarioAction(text, it) }
-    val debugAction get() = element.containingFile?.virtualFile?.let { DebugSingleScenarioAction(text, it) }
+    val runAction get() = element.containingFile?.virtualFile?.let {
+        RunSingleScenarioAction(SingleScenarioActionData(it, element.project, text))
+    }
+
+    val debugAction get() = element.containingFile?.virtualFile?.let {
+        DebugSingleScenarioAction(SingleScenarioActionData(it, element.project, text))
+    }
 
     fun update(element: PsiElement): Boolean {
         val newText = element.getScenarioText()
@@ -94,7 +100,7 @@ class ScenarioNodeUserData private constructor(
     }
 
     private fun PsiElement.getScenarioText(): String {
-        return JbehaveSingleScenarioAction.findScenario(text, 0) ?: "<Unknown>"
+        return ScenarioUtils.findScenarioTitleInText(text, 0) ?: "<Unknown>"
     }
 
     companion object {

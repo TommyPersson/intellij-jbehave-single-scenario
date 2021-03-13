@@ -3,24 +3,18 @@ package se.fortnox.intellij.jbehave;
 import com.intellij.execution.Executor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 
 public class RunSingleScenarioAction extends JbehaveSingleScenarioAction {
 	public RunSingleScenarioAction() {
-		super("Run This Scenario",
-			"Run single scenario",
-			AllIcons.Actions.Execute,
-			null,
-			null);
+		this(null);
 	}
 
-	public RunSingleScenarioAction(@NotNull String scenarioName, @NotNull VirtualFile storyFile) {
-		super("Run '" + ScenarioUtils.formatTrimmedName(scenarioName) + "'",
-			"Run '" + ScenarioUtils.formatTrimmedName(scenarioName) + "'",
-			AllIcons.Actions.Execute,
-			scenarioName,
-			storyFile);
+	public RunSingleScenarioAction(@Nullable SingleScenarioActionData data) {
+		super("Run", AllIcons.Actions.Execute, data);
 	}
 
 	@Override
