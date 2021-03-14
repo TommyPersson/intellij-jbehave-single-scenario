@@ -26,6 +26,7 @@ import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.ScenarioNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.StoryNodeUserData
 import se.fortnox.intellij.jbehave.ui.storyexplorer.nodes.wrapInTreeNode
 import se.fortnox.intellij.jbehave.utils.*
+import java.util.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
@@ -52,7 +53,8 @@ class StoryTreeUpdater(
     private val updateRequests = MutableSharedFlow<UpdateRequest>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val storyDirectories = mutableListOf<VirtualFile>()
-    private val storyFileNodeIndex = mutableMapOf<StoryFile, DefaultMutableTreeNode>()
+    private val storyFileNodeIndex = WeakHashMap<StoryFile, DefaultMutableTreeNode>()
+    private val scenarioElementNodeIndex = WeakHashMap<PsiElement, DefaultMutableTreeNode>()
 
     private var updateJob: Job? = null
 
@@ -76,6 +78,14 @@ class StoryTreeUpdater(
 
     fun queueFullTreeReset() {
         updateRequests.tryEmit(UpdateRequest.Reset)
+    }
+
+    fun findStoryNode(storyFile: StoryFile): DefaultMutableTreeNode? {
+        return storyFileNodeIndex[storyFile]
+    }
+
+    fun findScenarioNode(scenarioElement: PsiElement): DefaultMutableTreeNode? {
+        return scenarioElementNodeIndex[scenarioElement]
     }
 
     private fun queueFullTreeUpdate() {
@@ -125,6 +135,7 @@ class StoryTreeUpdater(
     private suspend fun updateTree() {
         storyDirectories.clear()
         storyFileNodeIndex.clear()
+        scenarioElementNodeIndex.clear()
 
         val modules = project.modules.sortedBy { it.contentRootPath }
         for (module in modules) {
@@ -167,7 +178,8 @@ class StoryTreeUpdater(
 
         val scenarioElements = findScenarioElements(storyFile)
         for ((scenarioIndex, scenarioElement) in scenarioElements.withIndex()) {
-            updateTreeWithScenario(scenarioElement, scenarioIndex, storyTreeNode)
+            val scenarioNode = updateTreeWithScenario(scenarioElement, scenarioIndex, storyTreeNode)
+            scenarioElementNodeIndex[scenarioElement] = scenarioNode
         }
 
         cleanUpStoryTreeNode(storyTreeNode, scenarioElements)
@@ -179,13 +191,15 @@ class StoryTreeUpdater(
         scenarioElement: PsiElement,
         scenarioIndex: Int,
         storyTreeNode: DefaultMutableTreeNode
-    ) {
+    ): DefaultMutableTreeNode {
         val scenarioTreeNode = getOrCreateScenarioNode(scenarioIndex, storyTreeNode, scenarioElement)
 
         val scenarioData = scenarioTreeNode.getUserObjectAsOrNull<ScenarioNodeUserData>()!!
         if (scenarioData.update(scenarioElement)) {
             treeModel.nodeChanged(scenarioTreeNode)
         }
+
+        return scenarioTreeNode
     }
 
     private fun findScenarioElements(file: StoryFile): List<PsiElement> {

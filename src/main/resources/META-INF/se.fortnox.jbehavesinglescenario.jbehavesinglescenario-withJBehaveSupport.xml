@@ -28,5 +28,15 @@
                 icon="AllIcons.Actions.StartDebugger"
                 description="Debug the selected item"
         />
+        <group>
+            <add-to-group group-id="DebugSingleScenario_GoToStoryClassGroup" anchor="last" />
+            <action
+                    id="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.ShowInStoryExplorerAction"
+                    class="se.fortnox.intellij.jbehave.ui.storyexplorer.actions.ShowInStoryExplorerAction"
+                    text="Show in Story Explorer"
+                    description="Show in story explorer"
+                    icon="AllIcons.General.Locate"
+            />
+        </group>
     </actions>
 </idea-plugin>

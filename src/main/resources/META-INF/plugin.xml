@@ -54,7 +54,7 @@
 
 	<depends>JUnit</depends>
 	<depends>com.intellij.modules.java</depends>
-	<depends optional="true" config-file="withJBehaveSupport-plugin.xml">jbehave-support-plugin</depends>
+	<depends optional="true" config-file="se.fortnox.jbehavesinglescenario.jbehavesinglescenario-withJBehaveSupport.xml">jbehave-support-plugin</depends>
 
 	<idea-version since-build="203"/>
 </idea-plugin>

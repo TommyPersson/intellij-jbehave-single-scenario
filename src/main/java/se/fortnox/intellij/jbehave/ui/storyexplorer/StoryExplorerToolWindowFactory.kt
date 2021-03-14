@@ -21,4 +21,8 @@ class StoryExplorerToolWindowFactory : ToolWindowFactory {
 
         toolWindow.contentManager.addContent(content)
     }
+
+    companion object {
+        const val TOOL_WINDOW_ID = "JBehave" // Must match plugin.xml
+    }
 }
